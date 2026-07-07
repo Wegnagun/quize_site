@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Добавить команду</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h1>Создание новой команды</h1>
+        <p style="color: #666;">Введите данные участника для турнирной таблицы.</p>
+        
+        <form method="post" action="{% url 'save_team' %}">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="id_name">Название:</label>
+                <input type="text" id="id_name" name="name" placeholder="Например: Квантовый скачок" required autofocus>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_score">Начальные очки:</label>
+                <input type="number" id="id_score" name="score" value="0" min="0" required>
+            </div>
+            
+            <div style="text-align: right;">
+                <button type="submit" class="btn btn-primary">Сохранить и вернуться</button>
+                <a href="{% url 'team_scores' %}" class="btn btn-outline">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,153 @@
+/* --- ПЕРЕМЕННЫЕ ТЕМЫ --- */
+:root {
+    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    
+    /* Цвета */
+    --color-bg: #f8f9fa;
+    --color-text: #2c3e50;
+    --color-muted: #6c757d;
+    --color-white: #ffffff;
+    
+    --color-primary: #27ae60;      /* Зеленый для кнопок действия */
+    --color-primary-dark: #229953;
+    --color-accent: #3498db;       /* Синий для ссылок/второстепенных кнопок */
+    --color-danger: #e74c3c;       /* Красный */
+    --color-border: #dee2e6;
+    --color-card-bg: #ffffff;
+}
+
+/* --- БАЗОВЫЕ СТИЛИ BODY И КОНТЕЙНЕРА --- */
+body {
+    font-family: var(--font-family);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* --- КНОПКИ (Общий стиль) --- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 160px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+    border: none;
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Варианты кнопок */
+.btn-primary { 
+    background-color: var(--color-primary); 
+    color: var(--color-white); 
+}
+.btn-primary:hover { background-color: var(--color-primary-dark); }
+
+.btn-outline { 
+    background-color: transparent; 
+    border: 2px solid var(--color-accent); 
+    color: var(--color-accent); 
+}
+.btn-outline:hover { 
+    background-color: var(--color-accent); 
+    color: var(--color-white); 
+}
+
+/* --- ФОРМЫ --- */
+.card {
+    background: var(--color-card-bg);
+    border-radius: 8px;
+    padding: 30px;
+    margin-bottom: 30px;
+    border: 1px solid var(--color-border);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.15);
+}
+
+/* --- ТАБЛИЦА --- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--color-card-bg);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+thead {
+    background-color: #f8fafb;
+}
+
+th, td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+}
+
+th {
+    font-weight: 600;
+    color: var(--color-text);
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+tbody tr:nth-child(even) { background-color: #fcfdfe; }
+tbody tr:hover { background-color: #f5fbff; }
+
+.badge {
+    display: inline-block;
+    padding: 5px 12px;
+    background-color: var(--color-primary);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    min-width: 50px;
+    text-align: center;
+}
+
+.place { font-weight: bold; color: var(--color-text); width: 60px; }
+.no-data { text-align: center; color: var(--color-muted); padding: 40px 20px; font-style: italic; }
+footer { text-align: center; padding: 20px 0; color: var(--color-muted); font-size: 0.8rem; border-top: 1px solid var(--color-border); margin-top: 40px; }
