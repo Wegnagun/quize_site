@@ -1,2 +1,2 @@
-# quize_site
-Сайт для отображения результатов игры в квиз
+python -m venv venv
+source venv/bin/activate
