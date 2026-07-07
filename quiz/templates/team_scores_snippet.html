@@ -1,0 +1,55 @@
+<div class="container">
+    <!-- БЛОК ТАБЛИЦЫ -->
+         <!-- КРАСИВЫЙ ЗАГОЛОВОК И СТАТИСТИКА -->
+    <div class="page-header-stats" style="text-align: center; margin-bottom: 40px; padding: 20px; border-radius: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; box-shadow: 0 8px 20px rgba(118, 75, 162, 0.3); position: relative; overflow: hidden;">
+        <h1 style="margin: 0 0 10px 0; font-size: 2.2rem; font-weight: 700;">Турнирная таблица</h1>
+        <p style="margin: 0; font-size: 1.1rem; opacity: 0.95;">Текущий рейтинг команд</p>
+        
+        <!-- Статистика -->
+        <div style="display: flex; justify-content: center; gap: 40px; margin-top: 20px; flex-wrap: wrap;">
+            <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(5px); padding: 10px 20px; border-radius: 30px;">
+                <strong>{{ teams|length }}</strong><br><small style="opacity: 0.8;">КОМАНД</small>
+            </div>
+            {% if teams %}
+                <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(5px); padding: 10px 20px; border-radius: 30px;">
+                    <strong>{{ teams.first.score }}</strong><br><small style="opacity: 0.8;">ОЧКИ ЛИДЕРА</small>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <section>
+        {% if teams %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Место</th>
+                        <th>Команда</th>
+                        <th>Очки</th>
+                        <th style="text-align: right;">Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for team in teams %}
+                    <tr>
+                        <td class="place">{{ forloop.counter }}</td>
+                        <td><strong>{{ team.name }}</strong></td>
+                        <td style="text-align: right;"><span class="badge">{{ team.score }}</span></td>
+                        <td class="actions" style="text-align: right;">
+                            <!-- Кнопки редактирования -->
+                            <a href="{% url 'edit_team' team.id %}">Ред.</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 40px; color: var(--color-muted); font-style: italic;">
+                            В базе пока нет ни одной команды.
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="no-data">Список команд пуст. Нажмите кнопку выше, чтобы добавить первую.</p>
+        {% endif %}
+    </section>
+</div>

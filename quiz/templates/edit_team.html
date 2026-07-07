@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Редактировать {{ team.name }}{% endblock %}
+
+{% block content %}
+<div class="question-container" style="max-width: 500px;">
+    <h2>Редактирование команды</h2>
+    
+    <form method="post" action="{% url 'edit_team' team.id %}">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="id_name">Название:</label>
+            <input type="text" id="id_name" name="name" value="{{ team.name }}" required autofocus>
+        </div>
+        
+        <div class="form-group">
+            <label for="id_score">Очки:</label>
+            <input type="number" id="id_score" name="score" value="{{ team.score }}" min="0" required>
+        </div>
+        
+        <div style="margin-top: 30px; text-align: center;">
+            <button type="submit" class="btn btn-primary">Обновить данные</button>
+            <a href="{% url 'team_scores' %}" class="btn btn-outline">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

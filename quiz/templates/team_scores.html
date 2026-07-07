@@ -1,62 +1,33 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Панель управления квизом</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-</head>
-<body>
 
-<div class="header">
-    <div class="container">
-        <h1>Турнирная таблица</h1>
-        <div class="nav-buttons">
-            <!-- Кнопка теперь ведет на отдельный адрес /add/ -->
-            <a href="{% url 'add_team' %}" class="btn btn-primary">Добавить новую команду</a>
-            <a href="{% url 'admin:index' %}" class="btn btn-outline">Админ-панель</a>
-        </div>
-    </div>
+{% block title %}Главная страница{% endblock %}
+
+{% block content %}
+<div class="question-container">
+    {% if current_quiz %}
+        <!-- Блок выбора раундов -->
+        <h2>{{ current_quiz.title }}</h2>
+        <p>Выберите раунд для начала игры:</p>
+        
+        <ul style="list-style: none; padding: 0; text-align: left; max-width: 500px; margin: 0 auto;">
+            {% for block in current_quiz.blocks.all %}
+                <li style="padding: 15px; border: 1px solid var(--color-border); border-radius: 8px; margin-bottom: 10px; background: #fafafa;">
+                    <strong>{{ block.title }}</strong>
+                    <span style="float: right; color: #666;">({{ block.questions.count }} вопросов)</span>
+                    <br>
+                    <!-- Ссылка на страницу раунда (вам нужно будет создать view play_block) -->
+                    <a href="{% url 'play_block' block.id %}" class="btn btn-outline" style="margin-top: 10px;">Начать раунд</a>
+                </li>
+            {% empty %}
+                <p class="no-data">В этом квизе еще нет тематических блоков.</p>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <!-- Приветственный текст, если квизов вообще нет -->
+        <h2>Добро пожаловать!</h2>
+        <p class="lead">Список активных игр пуст.</p>
+        <a href="{% url 'add_team' %}" class="btn btn-primary">Создать первую игру</a>
+    {% endif %}
 </div>
-
-<div class="container">
-    <!-- БЛОК ТАБЛИЦЫ -->
-    <section>
-        {% if teams %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Место</th>
-                        <th>Команда</th>
-                        <th>Очки</th>
-                        <th style="text-align: right;">Действия</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for team in teams %}
-                        <tr>
-                            <td class="place">{{ forloop.counter }}</td>
-                            <td><strong>{{ team.name }}</strong></td>
-                            <td><span class="badge">{{ team.score }}</span></td>
-                            <td class="actions" style="text-align: right;">
-                                <!-- Кнопки редактирования и удаления будут здесь -->
-                                <a href="#">Ред.</a>
-                                <a href="#">Удалить</a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p class="no-data">Список команд пуст. Нажмите кнопку выше, чтобы добавить первую.</p>
-        {% endif %}
-    </section>
-</div>
-
-<footer>
-    &copy; {{ now|date:"Y" }} Система тестирования
-</footer>
-
-</body>
-</html>
+{% endblock %}

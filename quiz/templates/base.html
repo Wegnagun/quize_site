@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Квиз{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+
+<div class="layout-grid">
+    <header class="site-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); ">
+        <div class="container header-content">
+            <h1>Турнир по квизу</h1>
+            <div class="nav-buttons">
+                <a href="{% url 'team_scores' %}" class="btn btn-outline">Таблица команд</a>
+                <a href="{% url 'add_team' %}" class="btn btn-outline">Добавить команду</a>
+                <a href="{% url 'admin:index' %}" class="btn btn-outline">Админ-панель</a>
+            </div>
+        </div>
+    </header>
+    <main class="page-content">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Боковая панель с таблицей (будет видна только если нужно) -->
+    <aside class="sidebar">
+        {% include 'team_scores_snippet.html' %}
+    </aside>
+    
+    <footer class="site-footer">
+        <div class="container text-center">
+            &copy; {{ now|date:"Y" }} Квиз-система
+        </div>
+    </footer>
+</div>
+
+</body>
+</html>

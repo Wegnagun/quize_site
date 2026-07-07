@@ -19,7 +19,7 @@ class Team(models.Model):
     class Meta:
         verbose_name = 'Команда'
         verbose_name_plural = 'Команды'
-        ordering = ('name',)
+        ordering = ('-score', 'name') 
 
 
 class Quiz(models.Model):
