@@ -108,6 +108,10 @@ celerybeat.pid
 .venv
 env/
 venv/
+/staticfiles/
+staticfiles
+.staticfiles
+staticfiles/
 ENV/
 env.bak/
 venv.bak/
