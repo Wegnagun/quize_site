@@ -16,7 +16,6 @@
                     <strong>{{ block.title }}</strong>
                     <span style="float: right; color: #666;">({{ block.questions.count }} вопросов)</span>
                     <br>
-                    <!-- Ссылка на страницу раунда (вам нужно будет создать view play_block) -->
                     <a href="{% url 'play_block' block.id %}" class="btn btn-outline" style="margin-top: 10px;">Начать раунд</a>
                 </li>
             {% empty %}
@@ -24,7 +23,6 @@
             {% endfor %}
         </ul>
     {% else %}
-        <!-- Приветственный текст, если квизов вообще нет -->
         <h2>Добро пожаловать!</h2>
         <p class="lead">Список активных игр пуст.</p>
         <a href="{% url 'add_team' %}" class="btn btn-primary">Создать первую игру</a>

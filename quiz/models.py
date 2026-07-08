@@ -62,6 +62,12 @@ class Question(models.Model):
     """Конкретный вопрос внутри тематического блока."""
     block = models.ForeignKey(Block, on_delete=models.CASCADE, related_name='questions')
     text = models.TextField(verbose_name="Текст вопроса")
+    answer = models.CharField(
+        max_length=500, 
+        verbose_name="Правильный ответ", 
+        blank=True, 
+        help_text="Для ведущего: правильный вариант"
+    )
     
     class Meta:
         verbose_name = "Вопрос"
@@ -71,16 +77,50 @@ class Question(models.Model):
         return f"Вопрос: {self.text[:60]}"
 
 
-class AnswerOption(models.Model):
-    """Вариант ответа на вопрос."""
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
-    text = models.CharField(max_length=255, verbose_name="Вариант ответа")
-    is_correct = models.BooleanField(default=False, verbose_name="Правильный ответ")
-    
+class TeamBlockResult(models.Model):
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='block_results')
+    block = models.ForeignKey(Block, on_delete=models.CASCADE, related_name='team_results')
+    current_question_index = models.PositiveIntegerField(default=0, verbose_name='Текущий вопрос') 
+    is_finished = models.BooleanField(default=False, verbose_name='Раунд проверен')
+    checked_at = models.DateTimeField(null=True, blank=True, verbose_name='Время проверки')
+
     class Meta:
-        verbose_name = "Вариант ответа"
-        verbose_name_plural = "Варианты ответов"
+        unique_together = ('team', 'block')
+        verbose_name = 'Результат команды в раунде'
+        verbose_name_plural = 'Результаты команд в раундах'
+        
+    @property
+    def correct_count(self):
+        """Свойство: считаем количество правильных ответов"""
+        return self.marks.filter(is_correct=True).count()
+        
+    @property
+    def total_points(self):
+        """Свойство: итоговые баллы за раунд (стандарт 1 балл за вопрос)"""
+        return self.correct_count 
+    
+    @property
+    def progress(self):
+        total = self.block.questions.count()
+        if total == 0: return "0/0"
+        return f"{self.current_question_index}/{total}"
         
     def __str__(self):
-        status = " (Верно)" if self.is_correct else ""
-        return f"{self.text}{status}"
+        status = "Проверено" if self.is_finished else "В процессе"
+        return f"{self.team.name} | {self.block.title} ({status})"
+
+
+class AnswerMark(models.Model):
+    result = models.ForeignKey(TeamBlockResult, on_delete=models.CASCADE, related_name='marks')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    is_correct = models.BooleanField(default=False, verbose_name='Ответ верный')
+
+    class Meta:
+        unique_together = ('result', 'question')
+        verbose_name = "Отметка ответа"
+        verbose_name_plural = "Отметки ответов"
+        
+    def __str__(self):
+        mark = "✅" if self.is_correct else "❌"
+        return f"{mark} Вопрос {self.question.id} для {self.result.team.name}"
+    

@@ -21,31 +21,70 @@
         {% if teams %}
             <table>
                 <thead>
-                    <tr>
-                        <th>Место</th>
-                        <th>Команда</th>
-                        <th>Очки</th>
-                        <th style="text-align: right;">Действия</th>
+                    <tr style="background-color: #e9ecef;">
+                        <th style="padding: 12px;">Место</th>
+                        <th style="padding: 12px;">Команда</th>
+                        <th style="padding: 12px; text-align: right;">Очки</th>
+                        <th style="padding: 12px; width: 100px; text-align: right;">Раунд</th>
+                        <th style="padding: 12px; width: 120px; text-align: right;">Действия</th>
                     </tr>
                 </thead>
                 <tbody>
-                {% for team in teams %}
-                    <tr>
-                        <td class="place">{{ forloop.counter }}</td>
-                        <td><strong>{{ team.name }}</strong></td>
-                        <td style="text-align: right;"><span class="badge">{{ team.score }}</span></td>
-                        <td class="actions" style="text-align: right;">
-                            <!-- Кнопки редактирования -->
-                            <a href="{% url 'edit_team' team.id %}">Ред.</a>
+                    {% for team in teams %}
+                        <tr class="{% if team.score >= 50 %}success-row{% elif team.score >= 20 %}warning-row{% endif %}" style="vertical-align: middle;">
+                            <td class="place" style="padding: 12px;">{{ forloop.counter }}</td>
+                            <td style="padding: 12px;"><strong>{{ team.name }}</strong></td>
+                            <td style="padding: 12px; text-align: right;"><span class="badge">{{ team.score }}</span></td>
+                            
+                            <!-- Статус раунда -->
+                            <td style="padding: 12px; text-align: right;">
+                                {% with result=team.block_results.last %}
+                                    {% if result %}
+                                        {% if result.is_finished %}
+                                            <span style="color: var(--accent-color); font-size: 0.8rem;">✅ Готово</span>
+                                        {% else %}
+                                            <span style="color: #fd7e14; font-size: 0.8rem;">⏳ Проверка</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span style="color: #6c757d; font-size: 0.8rem;">—</span>
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+
+                            <!-- Кнопки действий -->
+                            <td class="actions" style="padding: 12px; text-align: right;">
+                            <a href="{% url 'edit_team' team.id %}" class="action-btn edit">✏️</a>
+                                {% if quiz %}
+                                    {% if first_block %}
+                                        <!-- КНОПКА НАЧАЛА ПРОВЕРКИ первого раунда -->
+                                        {% if not team.round_1_done %}
+                                            <a href="{% url 'review_team_results' first_block.id team.id %}" 
+                                            class="action-btn check" title="Подвести итоги '{{ first_block.title }}'">
+                                                📝 {{ forloop.counter }}
+                                            </a>
+                                            
+                                        <!-- ССЫЛКА НА СЛЕДУЮЩИЙ РАУНД -->
+                                        {% elif team.has_next %}
+                                            <a href="{% url 'review_team_results' team.next_block.id team.id %}" 
+                                            class="action-btn check" title="Начать проверку '{{ team.next_block.title }}'">
+                                                📝 {{ forloop.counter }}
+                                            </a>
+                                            
+                                        {% else %}
+                                            <!-- ТУРНИР ЗАВЕРШЕН -->
+                                            <span class="action-btn disabled" title="Все раунды проверены">🏁 Итог</span>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endif %}
                         </td>
-                    </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="4" style="text-align: center; padding: 40px; color: var(--color-muted); font-style: italic;">
-                            В базе пока нет ни одной команды.
-                        </td>
-                    </tr>
-                {% endfor %}
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 60px; color: var(--color-muted); font-style: italic;">
+                                Список команд пуст. Начните турнир!
+                            </td>
+                        </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         {% else %}

@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Итоги: {{ team.name }} | {{ block.title }}{% endblock %}
+
+{% block content %}
+<div class="question-container">
+
+    <div style="text-align: center; margin-bottom: 30px; padding: 20px; border-radius: 12px; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); color: white;">
+        <h1 style="margin: 0;">{{ team.name }}</h1>
+        <p style="margin: 5px 0 0 0; font-size: 1.2rem; opacity: 0.9;">Раунд: {{ block.title }}</p>
+        <h2 style="margin: 15px 0 5px 0;">Очки в раунде: <span id="round-points">0</span></h2>
+    </div>
+
+    <form method="post" action="{% url 'review_team_results' block.id team.id %}" id="check-form">
+        {% csrf_token %}
+        
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background-color: #e9ecef;">
+                    <th style="padding: 12px; text-align: left;">№</th>
+                    <th style="padding: 12px; text-align: left;">Вопрос</th>
+                    <th style="padding: 12px; width: 120px;">Ответ верный?</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for question in questions %}
+                    <tr style="border-bottom: 1px solid #dee2e6;">
+                        <td style="padding: 12px; vertical-align: top;">{{ forloop.counter }}</td>
+                        <td style="padding: 12px; vertical-align: top;">
+                            <strong>{{ question.text }}</strong>
+                            {% if question.answer %}
+                                <br><small style="color: #6c757d;">Правильный ответ: {{ question.answer }}</small>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 12px; text-align: center; vertical-align: top;">
+                            <label style="display: inline-block; cursor: pointer; user-select: none;">
+                                <input type="checkbox" 
+                                       name="q_{{ question.id }}" 
+                                       data-qid="{{ question.id }}"
+                                       style="transform: scale(1.4);"
+                                       {% if team_result.marks.exists %}
+                                           {% for mark in team_result.marks.all %}
+                                               {% if mark.question == question and mark.is_correct %}checked{% endif %}
+                                           {% endfor %}
+                                       {% endif %}>
+                            </label>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="3" style="text-align: center; padding: 40px; color: var(--color-muted);">
+                            В этом раунде нет вопросов.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- КНОПКИ НАВИГАЦИИ -->
+        <div style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="{% url 'team_scores' %}" class="btn btn-outline">
+                &larr; Отмена, вернуться к таблице
+            </a>
+            
+            {% if next_team %}
+                {% if block and block.id %}
+                    <a href="{% url 'review_team_results_next' block.id team.id %}" 
+                    class="btn btn-primary">
+                    Сохранить и перейти к следующей команде &rarr;
+                    </a>
+                {% else %}
+                    <button type="submit" class="btn btn-primary" disabled>Сохранить</button>
+                {% endif %}
+            {% else %}
+                <a href="{% url 'team_scores' %}" class="btn btn-success" style="font-size: 1.1rem; padding: 12px 30px;">
+                    Завершить проверку раунда &rarr;
+                </a>
+            {% endif %}
+        </div>
+    </form>
+
+</div>
+
+<!-- Скрипт подсчета очков "на лету" при клике -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    updatePoints();
+    
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.addEventListener('change', updatePoints);
+    });
+});
+
+function updatePoints() {
+    let count = 0;
+    document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+        count++;
+    });
+    document.getElementById('round-points').innerText = count;
+}
+</script>
+{% endblock %}

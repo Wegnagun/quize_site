@@ -231,3 +231,13 @@ footer { text-align: center; padding: 20px 0; color: var(--color-muted); font-si
     margin: 0 2.5%;
 }
 
+.action-btn.check {
+    background-color: #cce5ff;
+    color: #004085;
+    border-color: #b8daff;
+}
+.action-btn.check:hover {
+    background-color: #b8daff;
+    transform: scale(1.15);
+    color: #00306e;
+}

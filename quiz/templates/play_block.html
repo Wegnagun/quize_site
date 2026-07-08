@@ -1,56 +1,131 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ block.title }}{% endblock %}
+{% block title %}Раунд: {{ block.title }}{% endblock %}
 
 {% block content %}
 <div class="question-container">
-    <!-- БЛОК УВЕДОМЛЕНИЙ -->
-    {% if request.GET.status == 'correct' %}
-        <div style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
-            ✅ Правильно! Балл засчитан.
+
+    <!-- ПАНЕЛЬ УПРАВЛЕНИЯ РАУНДОМ -->
+    <div style="text-align: center; margin-bottom: 30px; padding: 15px; border-radius: 12px; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); color: white; position: relative; overflow: hidden;">
+        <h1 style="margin: 0 0 5px 0; font-size: 2rem;">{{ block.quiz.title }} / {{ block.title }}</h1>
+        
+        <!-- Индикатор прогресса вопросов -->
+        <div id="progress-bar" style="height: 5px; width: 0%; background-color: rgba(255,255,255,0.5); margin-top: 10px; transition: width 0.5s ease;"></div>
+        
+        <!-- Навигация по вопросам (кнопки-цифры) -->
+        <div id="nav-buttons" style="display: flex; justify-content: center; gap: 10px; margin-top: 15px; flex-wrap: wrap; opacity: 0.9;">
+            {% for q in questions %}
+                <button class="btn btn-outline nav-btn" data-qid="{{ q.id }}" style="padding: 8px 12px; font-size: 0.9rem; min-width: auto;">
+                    {{ forloop.counter }}
+                </button>
+            {% endfor %}
         </div>
-    {% elif request.GET.status == 'wrong' %}
-        <div style="background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
-            ❌ Ошибка. Правильный ответ был ниже.
-            <!-- Подсветим правильный вариант серым цветом в списке ниже -->
-            <style>
-                label[for="opt_{{ request.GET.correct }}"] { background-color: #e2e3e5 !important; }
-            </style>
-        </div>
-    {% endif %}
-    <div style="text-align: center; margin-bottom: 30px; border-bottom: 1px solid var(--color-border); padding-bottom: 20px;">
-        <h2>{{ block.quiz.title }} / {{ block.title }}</h2>
-        <p>Вопрос <span id="current-q">1</span> из {{ questions|length }}</p>
     </div>
 
-    {% if questions %}
-        {% with first_question=questions.first %}
-        
-        <form method="post" action="{% url 'save_answer' first_question.id %}">
-            {% csrf_token %}
-            
-            <div class="question-text">
-                {{ forloop.counter }}. {{ first_question.text }}
-            </div>
+    <!-- КОНТЕЙНЕР ВОПРОСА -->
+    <div id="question-area">
+        <!-- Контент будет вставлен сюда скриптом при клике -->
+    </div>
 
-            <!-- Варианты ответов -->
-            {% for option in first_question.options.all %}
-                <label class="btn btn-outline" style="display:block; margin-bottom:10px; text-align:left; justify-content:flex-start; width: 100%;">
-                    <input type="radio" name="answer_choice" value="{{ option.id }}" required style="margin-right:15px; transform: scale(1.3);">
-                    {{ option.text }}
-                </label>
-            {% endfor %}
-            
-            <!-- Кнопка отправки -->
-            <div style="margin-top: 30px; text-align: center;">
-                <button type="submit" class="btn btn-primary">Ответить</button>
-            </div>
-        </form>
-        
-        {% endwith %}
-    {% else %}
-        <p class="no-data">В этом раунде пока нет вопросов.</p>
-    {% endif %}
 </div>
+
+<!-- СКРИПТ УПРАВЛЕНИЯ СЛАЙДЕРОМ ВОПРОСОВ -->
+<script>
+const questions = [
+    {% for question in questions %}
+        {
+            id: {{ question.id }},
+            text: "{{ question.text|escapejs }}",
+            answer: "{{ question.answer|escapejs }}"
+        }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+let currentIndex = 0;
+
+function renderQuestion(index) {
+    const q = questions[index];
+    const area = document.getElementById('question-area');
+    
+    // Очищаем интервал на случай, если остался от предыдущей версии кода
+    clearInterval(window.currentTimer);
+
+    area.innerHTML = `
+        <div class="card shadow-lg" style="border-left: 8px solid var(--accent-color);">
+            <div class="card-body p-4">
+                <div style="font-size: 1.4rem; line-height: 1.5; margin-bottom: 20px;" id="q-text">${q.text}</div>
+                
+                <!-- Блок ответа для ведущего (визуально выделен) -->
+                ${q.answer ? `<div style="background-color: #fff3cd; color: #856404; padding: 12px; border-radius: 8px; border-left: 4px solid #ffc107; margin-bottom: 20px;">
+                    <strong>Ответ:</strong> ${q.answer}
+                </div>` : ''}
+
+                <!-- Кнопки действий без таймера -->
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #dee2e6; padding-top: 20px;">
+                    <button onclick="prevQuestion()" class="btn btn-outline" ${index === 0 ? 'disabled' : ''}>
+                        &larr; Назад
+                    </button>
+                    
+                    <div>
+                        <button onclick="nextQuestion()" class="btn btn-success" id="nextBtn">
+                            ${(index === questions.length - 1) ? 'Завершить раунд' : 'Следующий'} &rarr;
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    updateNavButtons(index);
+    resetProgressBar();
+}
+
+function nextQuestion() {
+    if (currentIndex < questions.length - 1) {
+        currentIndex++;
+        renderQuestion(currentIndex);
+    } else {
+        // Если это был последний вопрос блока — возвращаемся к таблице
+        window.location.href = "{% url 'team_scores' %}";
+    }
+}
+
+function prevQuestion() {
+    if (currentIndex > 0) {
+        currentIndex--;
+        renderQuestion(currentIndex);
+    }
+}
+
+function updateNavButtons(activeIndex) {
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-outline');
+        if (parseInt(btn.dataset.qid) === questions[activeIndex].id) {
+            btn.classList.remove('btn-outline');
+            btn.classList.add('btn-primary');
+        }
+    });
+}
+
+function resetProgressBar() {
+    const percent = ((currentIndex + 1) / questions.length) * 100;
+    document.getElementById('progress-bar').style.width = percent + '%';
+}
+
+// Клики по кнопкам навигации "1, 2, 3..."
+document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const qid = parseInt(this.dataset.qid);
+        const idx = questions.findIndex(q => q.id === qid);
+        if (idx !== -1) {
+            currentIndex = idx;
+            renderQuestion(currentIndex);
+        }
+    });
+});
+
+renderQuestion(currentIndex);
+</script>
 {% endblock %}

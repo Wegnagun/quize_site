@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Проверка: {{ block.title }}{% endblock %}
+
+{% block content %}
+<div style="display: flex; gap: 30px;">
+    <!-- Левая колонка: Список команд -->
+    <div style="flex: 0 0 300px; background: #f8f9fa; padding: 20px; border-radius: 8px; height: fit-content; position: sticky; top: 20px; align-self: start;">
+        <h3>Команды</h3>
+        {% for team in teams %}
+            <div style="padding: 10px; margin-bottom: 10px; border: 1px solid var(--color-border); border-radius: 6px; cursor: pointer; font-weight: bold;" 
+                 onclick="showTeam({{ team.id }})" 
+                 id="team-nav-{{ team.id }}">
+                {{ team.name }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Правая колонка: Форма проверки -->
+    <div style="flex: 1; min-width: 0;">
+        <form method="post" action="{% url 'save_marks' block.id %}" id="check-form">
+            {% csrf_token %}
+            <input type="hidden" name="current_team_id" id="current_team_id" value="{{ teams.first.id }}">
+            
+            <h2 style="margin-top: 0;">Проверка раунда: {{ block.title }}</h2>
+            <p><strong>Текущая команда: <span id="current-team-name">{{ teams.first.name }}</span></strong></p>
+
+            {% for team in teams %}
+                <div class="team-panel" id="panel-{{ team.id }}" style="{% if not forloop.first %}display: none;{% endif %} margin-bottom: 40px;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background-color: #e9ecef;">
+                                <th style="padding: 12px; text-align: left;">№</th>
+                                <th style="padding: 12px; text-align: left;">Вопрос</th>
+                                <th style="padding: 12px; width: 100px;">Верно?</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for question in questions %}
+                                <tr style="border-bottom: 1px solid #dee2e6;">
+                                    <td style="padding: 12px; vertical-align: top;">{{ forloop.counter }}</td>
+                                    <td style="padding: 12px; vertical-align: top;">
+                                        <strong>{{ question.text }}</strong>
+                                        {% if question.answer %}
+                                            <br><small style="color: #6c757d;">Ответ: {{ question.answer }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td style="padding: 12px; text-align: center; vertical-align: top;">
+                                        <label style="display: inline-block; cursor: pointer; user-select: none;">
+                                            <input type="checkbox" 
+                                                   name="q_{{ question.id }}" 
+                                                   data-qid="{{ question.id }}"
+                                                   style="transform: scale(1.5); margin-right: 5px;"
+                                                   {% if team.current_result and team.current_result.marks.exists %}
+                                                       {% for mark in team.current_result.marks.all %}
+                                                           {% if mark.question == question and mark.is_correct %}checked{% endif %}
+                                                       {% endfor %}
+                                                   {% endif %}>
+                                        </label>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                    <!-- Итоговая кнопка сохранения для текущей команды -->
+                    <div style="text-align: right; margin-top: 20px;">
+                        <button type="submit" class="btn btn-primary">Сохранить результаты этой команды</button>
+                    </div>
+                </div>
+            {% endfor %}
+        </form>
+    </div>
+</div>
+
+<script>
+let currentTeamId = parseInt(document.getElementById('current_team_id').value);
+
+function showTeam(teamId) {
+    // Скрываем все панели
+    document.querySelectorAll('.team-panel').forEach(panel => panel.style.display = 'none');
+    // Показываем нужную
+    document.getElementById('panel-' + teamId).style.display = 'block';
+    
+    // Меняем активную ссылку в меню
+    document.querySelectorAll('[id^="team-nav-"]').forEach(el => el.style.fontWeight = 'normal');
+    document.getElementById('team-nav-' + teamId).style.fontWeight = 'bold';
+    
+    currentTeamId = teamId;
+    document.getElementById('current_team_id').value = teamId;
+    document.getElementById('current-team-name').innerText = event.target.innerText;
+}
+
+// Авто-смена скрытого ID формы при клике на чекбокс (чтобы знать, кого сохранять)
+document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('click', function() {
+        document.getElementById('current_team_id').value = this.closest('.team-panel').id.replace('panel-', '');
+    });
+});
+</script>
+{% endblock %}
