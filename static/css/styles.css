@@ -8,11 +8,15 @@
     --color-muted: #6c757d;
     --color-white: #ffffff;
     
-    --color-primary: #27ae60;      /* Зеленый для кнопок действия */
-    --color-primary-dark: #229953;
-    --color-accent: #3498db;       /* Синий для ссылок/второстепенных кнопок */
-    --color-danger: #e74c3c;       /* Красный */
-    --color-border: #dee2e6;
+    /* ОСНОВНОЙ ЗЕЛЕНЫЙ (для главных кнопок) */
+    --color-primary: #58d57f;      /* Было #27ae60 — сделали темнее */
+    --color-primary-dark: #4edf7c; /* Соответствующий темный при наведении */
+    
+    /* АКЦЕНТНЫЙ ЗЕЛЕНЫЙ (для ссылок/второстепенных кнопок .btn-outline) */
+    --color-accent: #dbf0e4;       /* Теперь это светло-зеленый вместо синего */
+    
+    --color-danger: #e74c3c;       
+    --color-border: #ffffff;
     --color-card-bg: #ffffff;
 }
 
@@ -161,11 +165,11 @@ footer { text-align: center; padding: 20px 0; color: var(--color-muted); font-si
 }
 
 .site-header {
-    background-color: var(--primary-color);
+    background-color: var(--color-primary); /* Используем наш главный зеленый */
     color: white;
     padding: 15px 0;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    grid-column: 1 / -1; /* Занимает всю ширину */
+    grid-column: 1 / -1;
 }
 
 .header-content {
