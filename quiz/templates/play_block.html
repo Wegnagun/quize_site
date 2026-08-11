@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Раунд: {{ block.title }}{% endblock %}
+{% block title %}Раунд: {{ quiz_block.title }}{% endblock %}
 
 {% block content %}
 <div class="question-container">
 
     <!-- ПАНЕЛЬ УПРАВЛЕНИЯ РАУНДОМ -->
     <div style="text-align: center; margin-bottom: 30px; padding: 15px; border-radius: 12px; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); color: white; position: relative; overflow: hidden;">
-        <h1 style="margin: 0 0 5px 0; font-size: 2rem;">{{ block.id }} / {{ block.title }}</h1>
+        <h1 style="margin: 0 0 5px 0; font-size: 2rem;">{{ quiz_block.title }} / {{ quiz_block.title }}</h1>
         
         <!-- Индикатор прогресса вопросов -->
         <div id="progress-bar" style="height: 5px; width: 0%; background-color: rgba(255,255,255,0.5); margin-top: 10px; transition: width 0.5s ease;"></div>
@@ -16,7 +16,11 @@
         <!-- Навигация по вопросам (кнопки-цифры) -->
         <div id="nav-buttons" style="display: flex; justify-content: center; gap: 10px; margin-top: 15px; flex-wrap: wrap; opacity: 0.9;">
             {% for q in questions %}
-                <button class="btn btn-outline nav-btn" data-qid="{{ q.id }}" style="padding: 8px 12px; font-size: 0.9rem; min-width: auto;">
+                <button 
+                    type="button" 
+                    class="btn btn-outline nav-btn" 
+                    data-qid="{{ q.id }}" 
+                    style="padding: 8px 12px; font-size: 0.9rem; min-width: auto;">
                     {{ forloop.counter }}
                 </button>
             {% endfor %}
@@ -43,29 +47,41 @@ const questions = [
 ];
 
 let currentIndex = 0;
+const blockId = "{{ quiz_block.id }}";
 
+// Функция отрисовки вопроса в DOM
 function renderQuestion(index) {
     const q = questions[index];
     const area = document.getElementById('question-area');
+    
+    // Защита на случай пустого массива или ошибки индекса
+    if (!q) return;
+
+    let progressHtml = '';
 
     area.innerHTML = `
-        <div class="card shadow-lg" style="border-left: 8px solid var(--accent-color);">
+        <div class="card shadow-lg" style="border-left: 8px solid var(--color-primary);">
             <div class="card-body p-4">
                 <div style="font-size: 1.4rem; line-height: 1.5; margin-bottom: 20px;" id="q-text">${q.text}</div>
                 
-                <!-- Блок ответа для ведущего (визуально выделен) -->
-                ${q.answer ? `<div style="background-color: #fff3cd; color: #856404; padding: 12px; border-radius: 8px; border-left: 4px solid #ffc107; margin-bottom: 20px;">
-                    <strong>Ответ:</strong> ${q.answer}
-                </div>` : ''}
+                <!-- Блок ответа для ведущего -->
+                ${progressHtml}
 
-                <!-- Кнопки действий без таймера -->
-                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #dee2e6; padding-top: 20px;">
-                    <button onclick="prevQuestion()" class="btn btn-outline" ${index === 0 ? 'disabled' : ''}>
+                <!-- Панель навигации кнопок -->
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-border); padding-top: 20px;">
+                    
+                    <button onclick="prevQuestion()" 
+                            class="btn btn-outline"
+                            id="btn-prev"
+                            ${index === 0 ? 'disabled' : ''}>
                         &larr; Назад
                     </button>
                     
                     <div>
-                        <button onclick="nextQuestion()" class="btn btn-success" id="nextBtn">
+                        <button onclick="nextQuestion()" 
+                                class="btn btn-primary btn-lg"
+                                id="nextBtn"
+                                style="padding: 12px 24px; font-size: 1.1rem;">
                             ${(index === questions.length - 1) ? 'Завершить раунд' : 'Следующий'} &rarr;
                         </button>
                     </div>
@@ -78,13 +94,15 @@ function renderQuestion(index) {
     resetProgressBar();
 }
 
+// --- ЛОГИКА НАВИГАЦИИ ---
+
 function nextQuestion() {
     if (currentIndex < questions.length - 1) {
         currentIndex++;
         renderQuestion(currentIndex);
     } else {
-        // Если это был последний вопрос блока — возвращаемся к таблице
-        window.location.href = "{% url 'team_scores' %}";
+        // Если это был последний вопрос блока — возвращаемся к таблице лидеров
+        window.location.href = "/check/" + blockId + "/";
     }
 }
 
@@ -95,10 +113,13 @@ function prevQuestion() {
     }
 }
 
+// Обновление подсветки кнопок с номерами вопросов
 function updateNavButtons(activeIndex) {
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('btn-primary');
         btn.classList.add('btn-outline');
+        
+        // Подсвечиваем кнопку текущего вопроса
         if (parseInt(btn.dataset.qid) === questions[activeIndex].id) {
             btn.classList.remove('btn-outline');
             btn.classList.add('btn-primary');
@@ -106,16 +127,18 @@ function updateNavButtons(activeIndex) {
     });
 }
 
+// Прогресс-бар внизу
 function resetProgressBar() {
     const percent = ((currentIndex + 1) / questions.length) * 100;
     document.getElementById('progress-bar').style.width = percent + '%';
 }
 
-// Клики по кнопкам навигации "1, 2, 3..."
+// Клики по цифровым кнопкам "1, 2, 3..."
 document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.addEventListener('click', function() {
-        const qid = parseInt(this.dataset.qid);
-        const idx = questions.findIndex(q => q.id === qid);
+        const targetQid = parseInt(this.dataset.qid);
+        const idx = questions.findIndex(q => q.id === targetQid);
+        
         if (idx !== -1) {
             currentIndex = idx;
             renderQuestion(currentIndex);
@@ -123,6 +146,7 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
     });
 });
 
+// Первоначальная отрисовка первого вопроса при загрузке страницы
 renderQuestion(currentIndex);
 </script>
 {% endblock %}

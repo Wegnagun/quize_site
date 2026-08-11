@@ -1,28 +1,31 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Проверка раунда: {{ block.title }}{% endblock %}
+{% block title %}Проверка раунда{{ quiz_block.title }}{% endblock %}
 
 {% block content %}
-<div class="question-container">
+<div class="container py-4">
 
-    <!-- ШАПКА СТРАНИЦЫ -->
+    <!-- ШАПКА -->
     <div style="text-align: center; margin-bottom: 30px; padding: 20px; border-radius: 12px; background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark)); color: white;">
-        <h1 style="margin: 0;">{{ block.quiz.title }} / {{ block.title }}</h1>
-        <p style="margin: 5px 0 0 0; font-size: 1.1rem; opacity: 0.9;">Подсчет очков за раунд</p>
+        <h1 style="margin: 0;">{{ block.quiz.title }} / {{ quiz_block.title }}</h1>
     </div>
 
     <!-- ФОРМА ПРОВЕРКИ -->
-    <form method="post" action="{% url 'save_marks' block.id %}" id="check-form">
+    <form method="post" action="{% url 'save_marks' quiz_block.id %}" id="check-form">
         {% csrf_token %}
         
-        <table class="table table-bordered table-hover align-middle" style="font-size: 1rem;">
+        <table class="table table-bordered align-middle" style="font-size: 1rem; width: 100%;">
             <thead class="table-dark text-center">
                 <tr>
                     <th style="width: 60px;">№</th>
                     <th style="min-width: 300px;">Вопрос</th>
+                    
+                    {# Динамические колонки команд #}
                     {% for team in teams %}
-                        <th style="width: 200px;" title="{{ team.name }}">{{ team.name|truncatechars:15 }}</th>
+                        <th style="width: 200px; text-align: right;" title="{{ team.name }}">
+                            {{ team.name }}
+                        </th>
                     {% endfor %}
                 </tr>
             </thead>
@@ -30,32 +33,27 @@
                 {% for question in questions %}
                     <tr>
                         <td class="text-center align-middle"><strong>{{ forloop.counter }}</strong></td>
-                        <td>
+                        <td style="vertical-align: middle; max-width: 450px;">
                             <strong>{{ question.text }}</strong><br>
                             <small style="color: var(--color-muted);">Ответ: {{ question.answer }}</small>
                         </td>
                         
+                        {# ЦИКЛ ПО КОМАНДАМ #}
                         {% for team in teams %}
-                            <td class="text-center align-middle">
-                                {# Ищем существующую метку ответа #}
-                                {% with mark=team_results|get_item:team.id|attr:"marks"|find:"question"|witharg:question %}
-                                    {% if mark %}
-                                        <input type="checkbox" 
-                                               name="mark_{{ team.id }}_{{ question.id }}" 
-                                               id="m_{{ team.id }}_{{ question.id }}"
-                                               checked>
-                                    {% else %}
-                                        <input type="checkbox" 
-                                               name="mark_{{ team.id }}_{{ question.id }}" 
-                                               id="m_{{ team.id }}_{{ question.id }}">
-                                    {% endif %}
-                                {% endwith %}
+                            <td class="text-center align-middle" style="padding: 8px; vertical-align: middle; position: relative;">
+                                
+                                <input type="checkbox" 
+                                       class="mark-checkbox"
+                                       data-team-id="{{ team.id }}"
+                                       data-question-id="{{ question.id }}"
+                                       style="transform: scale(1.3); cursor: pointer;"
+                                       autocomplete="off">
                             </td>
                         {% endfor %}
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="{{ teams.count|add:2 }}" class="text-center py-5">
+                        <td colspan="4" class="text-center py-5">
                             <span class="badge bg-danger">В этом раунде нет вопросов.</span>
                         </td>
                     </tr>
@@ -65,10 +63,10 @@
 
         <!-- КНОПКИ УПРАВЛЕНИЯ -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px;">
-            <a href="{% url 'team_scores' %}" class="btn btn-outline-secondary btn-lg">&larr; Отмена</a>
+            <a href="{% url 'team_scores' %}" class="btn btn-outline-secondary btn-lg">&larr; Назад к таблице</a>
             
             <button type="submit" class="btn btn-success btn-lg px-5" style="font-size: 1.2rem;">
-                Сохранить итоги и начислить очки
+                Сохранить итоги &rarr;
             </button>
         </div>
     </form>
