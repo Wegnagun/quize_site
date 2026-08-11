@@ -30,6 +30,11 @@ def play_block(request, block_id):
     """
     block = get_object_or_404(Block, id=block_id)
     questions = block.questions.all().order_by('id')
+     # ДОБАВЬТЕ ЭТУ СТРОКУ:
+    print("--- DEBUG BLOCK OBJECT ---")
+    print(block.id)           # Покажет строковое представление __str__
+    print(block.title)     # Покажет ВСЕ поля как словарь {'id': 1, 'title': '...', ...}
+
     
     context = {
         'block': block,
@@ -58,63 +63,6 @@ def edit_team(request, team_id):
     }
     return render(request, 'edit_team.html', context)
 
-def check_block(request, block_id):
-    """
-    Страница проверки раунда: отображает таблицу команд и вопросы с чекбоксами.
-    """
-    block = get_object_or_404(Block, id=block_id)
-    questions = block.questions.all().order_by('id')
-    teams = Team.objects.all().order_by('-score', 'name')
-    
-    team_results = {}
-    for team in teams:
-        result, created = TeamBlockResult.objects.get_or_create(team=team, block=block)
-        team_results[team.id] = result
-        
-    context = {
-        'block': block,
-        'questions': questions,
-        'teams': teams,
-        'team_results': team_results,
-    }
-    return render(request, 'check_block.html', context)
-
-
-def save_marks(request, block_id):
-    """
-    Обрабатывает POST-запрос от формы проверки.
-    Сохраняет галочки и пересчитывает очки команды за раунд.
-    """
-    if request.method == 'POST':
-        block = get_object_or_404(Block, id=block_id)
-        current_team_id = int(request.POST.get('current_team_id'))
-        team = get_object_or_404(Team, id=current_team_id)
-        team_result, created = TeamBlockResult.objects.get_or_create(team=team, block=block)
-        
-        for question in block.questions.all():
-            checkbox_name = f'q_{question.id}'
-            
-            is_correct = checkbox_name in request.POST
-            
-            mark, _ = AnswerMark.objects.update_or_create(
-                result=team_result,
-                question=question,
-                defaults={'is_correct': is_correct}
-            )
-        
-        correct_count = team_result.marks.filter(is_correct=True).count()
-        
-        total_score = sum(res.total_points for res in team.block_results.all())
-        team.score = total_score
-        team.save()
-        
-        team_result.is_finished = True
-        team_result.checked_at = timezone.now()
-        team_result.save()
-        
-        return redirect('check_block', block_id=block.id)
-        
-    return redirect('team_scores')
 
 def review_team_results(request, block_id, team_id):
     """
@@ -200,3 +148,98 @@ def review_team_results_next(request):
         'first_block': first_block,
     }
     return render(request, 'team_scores.html', context)
+
+
+def check_block(request, block_id):
+    """
+    Страница "Судейская": сверка ответов команд по бумажке.
+    """
+    block = get_object_or_404(Block, id=block_id)
+    questions = block.questions.all().order_by('id')
+    teams = Team.objects.all().order_by('-score', 'name')
+    
+    # Собираем текущие результаты, чтобы чекбоксы были отмечены при открытии
+    team_results = {}
+    for team in teams:
+        result, created = TeamBlockResult.objects.get_or_create(team=team, block=block)  # шо нах за креатед?????
+        team_results[team.id] = result
+        
+    context = {
+        'block': block,
+        'questions': questions,
+        'teams': teams,
+        'team_results': team_results,
+    }
+    return render(request, 'check_block.html', context)
+
+
+def save_marks(request, block_id):
+    if request.method == 'POST':
+        block = get_object_or_404(Block, id=block_id)
+        
+        # Определяем, какую команду мы только что проверили
+        team_id = int(request.POST.get('team_id'))
+        team = get_object_or_404(Team, id=team_id)
+        
+        team_result, _ = TeamBlockResult.objects.get_or_create(team=team, block=block)
+        
+        questions = list(block.questions.all())
+        correct_count = 0
+
+        for question in questions:
+            checkbox_name = f'mark_{team.id}_{question.id}'
+            is_correct = checkbox_name in request.POST
+            
+            AnswerMark.objects.update_or_create(
+                result=team_result,
+                question=question,
+                defaults={'is_correct': is_correct}
+            )
+            if is_correct:
+                correct_count += 1
+
+        # Пересчет общего счета команды
+        total_score = sum(res.total_points for res in team.block_results.all())
+        team.score = total_score
+        team.save()
+        
+        team_result.is_finished = True
+        team_result.checked_at = timezone.now()
+        team_result.save()
+
+        # --- ЛОГИКА ПЕРЕХОДА ---
+        all_teams = list(Team.objects.all().order_by('-score', 'name'))
+        
+        try:
+            current_index = [t.id for t in all_teams].index(team.id)
+            next_team = None
+            
+            # Ищем следующую НЕПРОВЕРЕННУЮ команду в ЭТОМ же раунде
+            for i in range(current_index + 1, len(all_teams)):
+                candidate = all_teams[i]
+                cand_res, _ = TeamBlockResult.objects.get_or_create(team=candidate, block=block)
+                if not cand_res.is_finished:
+                    next_team = candidate
+                    break
+            
+            if next_team:
+                # Если нашли — ведем к ней на ту же страницу check_block
+                return redirect('check_block', block_id=block.id) + f'?team={next_team.id}'
+            else:
+                # Если эта команда была последней в раунде -> ищем СЛЕДУЮЩИЙ БЛОК
+                next_block = Block.objects.filter(id__gt=block.id).order_by('id').first()
+                
+                if next_block:
+                    first_team = all_teams[0]
+                    nb_res, _ = TeamBlockResult.objects.get_or_create(team=first_team, block=next_block)
+                    if not nb_res.is_finished:
+                        return redirect('check_block', block_id=next_block.id) + '?team=' + str(first_team.id)
+                
+                # Если раунды кончились вообще
+                messages.success(request, "Все раунды завершены!")
+                return redirect('team_scores')
+
+        except ValueError:
+             return redirect('team_scores')
+
+    return redirect('team_scores')

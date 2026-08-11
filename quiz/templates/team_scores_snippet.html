@@ -5,6 +5,7 @@
 
 <div style="padding: 15px; background: #fff; border: 1px solid var(--color-border); border-top: none; border-radius: 0 0 8px 8px; height: calc(100% - 50px); overflow-y: auto;">
 
+    <!-- ИСПРАВЛЕНО: Используем TEAM_RANKING из context_processor -->
     {% if TEAM_RANKING %}
         
         <table class="table table-sm" style="font-size: 0.85rem; margin-bottom: 10px;">
@@ -26,14 +27,16 @@
                 {% endfor %}
             </tbody>
         </table>
-    
         
     {% else %}
+        <!-- Если квиз выбран, но команд нет -->
         {% if CURRENT_QUIZ %}
             <div class="alert alert-info text-center" style="margin-bottom: 0; font-size: 0.9rem;">
-                В квизе пока нет команд.<br>
+                В текущем квизе пока нет команд.<br>
+                <a href="{% url 'add_team' %}" class="alert-link" style="display:block; margin-top:5px;">+ Добавить первую</a>
             </div>
         {% else %}
+            <!-- Если вообще нет квизов в базе -->
             <div class="alert alert-warning text-center" style="margin-bottom: 0; font-size: 0.9rem;">
                 Квизы не созданы.<br>
                 <a href="{% url 'team_scores' %}" style="display:block; margin-top:5px;">Создать игру</a>
