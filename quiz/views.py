@@ -1,7 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.contrib import messages 
-from .models import Team, Quiz, Block, Question, TeamBlockResult, AnswerMark
+from django.db.models import Sum
+from .models import Team, Quiz, Block, TeamBlockResult, AnswerMark, Question
 
 def team_scores(request):
     """Главная страница — только просмотр таблицы."""
@@ -188,65 +189,65 @@ def save_marks(request, block_id):
         return redirect('team_scores')
         
     block = get_object_or_404(Block, id=block_id)
+    teams = list(Team.objects.all().order_by('-score', 'name'))
     
-    # Собираем данные из формы: { team_id: [list_of_question_ids] }
+    # Получаем СПИСОК отмеченных пар "TeamID_QuestionID"
+    raw_marks = request.POST.getlist('marks') 
+    print(f"Сырые данные POST: {raw_marks}")
+    
+    # Преобразуем в словарь {TeamID: [List_of_Question_IDs]}
     submitted_data = {}
-    for key in request.POST.keys():
-        if not key.startswith('mark_'):
-            continue
+    for item in raw_marks:
         try:
-            _, t_id_str, q_id_str = key.split('_')
-            t_id, q_id = int(t_id_str), int(q_id_str)
+            t_str, q_str = item.split('_')
+            t_id = int(t_str)
+            q_id = int(q_str)
             submitted_data.setdefault(t_id, set()).add(q_id)
-        except (ValueError, IndexError):
+        except ValueError:
             continue
 
-    teams = Team.objects.all().order_by('-score', 'name')
+    print(f"Парсинг завершен: {submitted_data}")
 
-    # Проходим циклом ПО ВСЕМ командам раунда для полного обновления состояния
     for team in teams:
-        # Получаем результат этой команды в этом блоке
-        team_result, created = TeamBlockResult.objects.get_or_create(
-            team=team,
-            block=block
-        )
+        print(f"\n--- Обработка: {team.name} ---")
         
-        # 1. Стираем все старые отметки этого блока для этой команды
-        team_result.marks.all().delete()
+        tr, _ = TeamBlockResult.objects.get_or_create(team=team, block=block)
         
         correct_count = 0
         
-        # 2. Проходим по всем вопросам блока
-        for question in block.questions.all():
-            
-            # Проверяем, была ли галочка установлена пользователем
-            is_checked_in_form = (
-                str(team.id) + "_" + str(question.id) in [
-                    f"{t}_{q}" for tid, qs in submitted_data.items() for q in qs
-                ]
-            )
-            
-            # Создаем метку (AnswerMark)
-            AnswerMark.objects.create(
-                result=team_result,
-                question=question,
-                is_correct=is_checked_in_form
-            )
-            
-            if is_checked_in_form:
-                correct_count += 1
-
-        # --- КРИТИЧЕСКИ ВАЖНЫЙ БЛОК ---
-        # Пересчитываем ОБЩИЙ счет команды СУММАРНО за все раунды
-        total_score = sum(res.total_points for res in team.block_results.all())
-        team.score = total_score
-        team.save() # Сохраняем изменение очков ВНЕШНЕЙ модели Team
+        # Сначала удаляем старые метки этого раунда у этой команды
+        AnswerMark.objects.filter(result=tr).delete()
         
-        # Обновляем статус текущей проверки
-        team_result.is_finished = True
-        team_result.checked_at = timezone.now()
-        team_result.save() 
-        # Обратите внимание: мы НЕ пишем в team_result.correct_count!
+        for question in block.questions.all():
+            is_correct = str(question.id) in map(str, submitted_data.get(team.id, []))
+            
+            # Создаем запись о проверке
+            AnswerMark.objects.create(
+                result=tr,
+                question=question,
+                is_correct=is_correct
+            )
+            
+            if is_correct:
+                correct_count += 1
+                
+        print(f"[CALC] Правильных ответов в этом блоке: {correct_count}")
+        
+        # Сохраняем очки за ЭТОТ раунд
+        tr.block_score = correct_count
+        tr.is_finished = True
+        tr.save() 
+        
+        # ПЕРЕСЧИТ ОБЩЕГО СЧЕТА КОМАНДЫ СУММАРНО
+        total_from_db = sum(res.block_score for res in team.block_results.all())
+        
+        print(f"[UPDATE] Старый счет: {team.score}. Новый общий счет: {total_from_db}")
+        
+        team.score = total_from_db
+        team.save() # <-- КРИТИЧЕСКИ ВАЖНО!
+        
+        fresh = Team.objects.get(id=team.id)
+        print(f"[DB SUCCESS] Финальный Score в базе теперь: {fresh.score}")
 
-    messages.success(request, f"Результаты блока «{block.title}» успешно сохранены.")
+    messages.success(request, "Очки сохранены!")
     return redirect('team_scores')

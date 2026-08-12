@@ -37,17 +37,14 @@
                             <strong>{{ question.text }}</strong><br>
                             <small style="color: var(--color-muted);">Ответ: {{ question.answer }}</small>
                         </td>
-                        
-                        {# ЦИКЛ ПО КОМАНДАМ #}
                         {% for team in teams %}
-                            <td class="text-center align-middle" style="padding: 8px; vertical-align: middle; position: relative;">
-                                
+                            <td style="text-align: center; vertical-align: middle;">
                                 <input type="checkbox" 
-                                       class="mark-checkbox"
-                                       data-team-id="{{ team.id }}"
-                                       data-question-id="{{ question.id }}"
-                                       style="transform: scale(1.3); cursor: pointer;"
-                                       autocomplete="off">
+                                    name="marks" 
+                                    value="{{ team.id }}_{{ question.id }}"
+                                    id="m_{{ team.id }}_{{ question.id }}" 
+                                    class="form-check-input"
+                                    style="transform: scale(1.2); cursor: pointer;">
                             </td>
                         {% endfor %}
                     </tr>

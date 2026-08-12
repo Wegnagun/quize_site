@@ -83,6 +83,7 @@ class TeamBlockResult(models.Model):
     current_question_index = models.PositiveIntegerField(default=0, verbose_name='Текущий вопрос') 
     is_finished = models.BooleanField(default=False, verbose_name='Раунд проверен')
     checked_at = models.DateTimeField(null=True, blank=True, verbose_name='Время проверки')
+    block_score = models.IntegerField(default=0, verbose_name='Очки за раунд')
 
     class Meta:
         unique_together = ('team', 'block')
@@ -94,10 +95,10 @@ class TeamBlockResult(models.Model):
         """Свойство: считаем количество правильных ответов"""
         return self.marks.filter(is_correct=True).count()
         
-    @property
+    @property 
     def total_points(self):
-        """Свойство: итоговые баллы за раунд (стандарт 1 балл за вопрос)"""
-        return self.correct_count 
+        other_scores_sum = sum(res.block_score for res in self.team.block_results.exclude(id=self.id))
+        return other_scores_sum + self.block_score 
     
     @property
     def progress(self):
