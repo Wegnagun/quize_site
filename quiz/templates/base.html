@@ -9,9 +9,9 @@
 <body>
 
 <div class="layout-grid">
-    <header class="site-header" style="background: linear-gradient(135deg, #54d354 0%, #258834 100%); ">
+    <header class="site-header" style="background: linear-gradient(135deg, #037030, #10e04e); ">
         <div class="container header-content">
-            <h1>Турнир по квизу</h1>
+            <h1>Квиз УТРД ФТС России</h1>
             <div class="nav-buttons">
                 <a href="{% url 'team_scores' %}" class="btn btn-outline-menu">Таблица команд</a>
                 <a href="{% url 'add_team' %}" class="btn btn-outline-menu">Добавить команду</a>
@@ -23,15 +23,13 @@
         {% block content %}
         {% endblock %}
     </main>
-
-    <!-- Боковая панель с таблицей (будет видна только если нужно) -->
     <aside class="sidebar">
         {% include 'team_scores_snippet.html' %}
     </aside>
     
     <footer class="site-footer">
         <div class="container text-center">
-            &copy; {{ now|date:"Y" }} Квиз-система
+            &copy; {{ now|date:"Y" }} Квиз-система. УТРД ФТС России.
         </div>
     </footer>
 </div>

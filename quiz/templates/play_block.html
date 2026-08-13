@@ -7,7 +7,7 @@
 <div class="question-container">
 
     <!-- ПАНЕЛЬ УПРАВЛЕНИЯ РАУНДОМ -->
-    <div style="text-align: center; margin-bottom: 30px; padding: 15px; border-radius: 12px; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); color: white; position: relative; overflow: hidden;">
+    <div style="text-align: center; margin-bottom: 30px; padding: 15px; border-radius: 12px; background: linear-gradient(135deg, #037030, #10e04e); color: white; position: relative; overflow: hidden;">
         <h1 style="margin: 0 0 5px 0; font-size: 2rem;">{{ quiz_block.title }} / {{ quiz_block.title }}</h1>
         
         <!-- Индикатор прогресса вопросов -->
@@ -117,11 +117,11 @@ function prevQuestion() {
 function updateNavButtons(activeIndex) {
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('btn-primary');
-        btn.classList.add('btn-outline');
+        btn.classList.add('btn-outline-menu');
         
         // Подсвечиваем кнопку текущего вопроса
         if (parseInt(btn.dataset.qid) === questions[activeIndex].id) {
-            btn.classList.remove('btn-outline');
+            btn.classList.remove('btn-outline-menu');
             btn.classList.add('btn-primary');
         }
     });

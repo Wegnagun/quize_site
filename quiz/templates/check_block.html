@@ -1,29 +1,28 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Проверка раунда{{ quiz_block.title }}{% endblock %}
+{% block title %}{{ quiz_block.title }}{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-
-    <!-- ШАПКА -->
-    <div style="text-align: center; margin-bottom: 30px; padding: 20px; border-radius: 12px; background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark)); color: white;">
-        <h1 style="margin: 0;">{{ block.quiz.title }} / {{ quiz_block.title }}</h1>
-    </div>
+<div class="container py-5">
+        <!-- ХЕДЕР СТРАНИЦЫ -->
+        <div style="text-align: center; margin-bottom: 40px; padding: 25px; border-radius: 16px; background: linear-gradient(135deg, #037030, #10e04e); color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative; overflow: hidden;">
+            <h1 style="margin: 0; font-size: 2.2rem;">Сверка ответов за раунд</h1>
+        </div>
 
     <!-- ФОРМА ПРОВЕРКИ -->
     <form method="post" action="{% url 'save_marks' quiz_block.id %}" id="check-form">
         {% csrf_token %}
         
-        <table class="table table-bordered align-middle" style="font-size: 1rem; width: 100%;">
-            <thead class="table-dark text-center">
+        <table class="master-table">
+            <thead>
                 <tr>
-                    <th style="width: 60px;">№</th>
-                    <th style="min-width: 300px;">Вопрос</th>
+                    <th style="width: 70px;">№</th>
+                    <th>Вопрос</th>
                     
                     {# Динамические колонки команд #}
                     {% for team in teams %}
-                        <th style="width: 200px; text-align: right;" title="{{ team.name }}">
+                        <th class="header-team text-center" title="{{ team.name }}">
                             {{ team.name }}
                         </th>
                     {% endfor %}
@@ -31,20 +30,22 @@
             </thead>
             <tbody>
                 {% for question in questions %}
-                    <tr>
-                        <td class="text-center align-middle"><strong>{{ forloop.counter }}</strong></td>
-                        <td style="vertical-align: middle; max-width: 450px;">
-                            <strong>{{ question.text }}</strong><br>
-                            <small style="color: var(--color-muted);">Ответ: {{ question.answer }}</small>
+                    <tr data-qid="{{ question.id }}">
+                        <td class="q-num text-center align-middle"><strong>{{ forloop.counter }}</strong></td>
+                        <td class="q-text" style="max-width: 400px; vertical-align: middle; line-height: 1.6;">
+                            {{ question.text }}
+                            {% if question.answer %}
+                                <br><small style="color: #6c757d; display: inline-block; margin-top: 5px;">Ответ: {{ question.answer }}</small>
+                            {% endif %}
                         </td>
                         {% for team in teams %}
-                            <td style="text-align: center; vertical-align: middle;">
+                            <td class="mark-cell text-center align-middle position-relative">
                                 <input type="checkbox" 
                                     name="marks" 
                                     value="{{ team.id }}_{{ question.id }}"
                                     id="m_{{ team.id }}_{{ question.id }}" 
-                                    class="form-check-input"
-                                    style="transform: scale(1.2); cursor: pointer;">
+                                    class="native-check">
+                                <label for="m_{{ team.id }}_{{ question.id }}" class="custom-check"></label>
                             </td>
                         {% endfor %}
                     </tr>
@@ -59,11 +60,13 @@
         </table>
 
         <!-- КНОПКИ УПРАВЛЕНИЯ -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px;">
-            <a href="{% url 'team_scores' %}" class="btn btn-outline-secondary btn-lg">&larr; Назад к таблице</a>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; gap: 15px; flex-wrap: wrap;">
+            <button href="{% url 'team_scores' %}"  type="submit" class="btn btn-success btn-lg px-5" style="font-size: 1.1rem; font-weight: 600;">
+                &larr; Назад к таблице лидеров
+            </button>
             
-            <button type="submit" class="btn btn-success btn-lg px-5" style="font-size: 1.2rem;">
-                Сохранить итоги &rarr;
+            <button type="submit" class="btn btn-success btn-lg px-5" style="font-size: 1.1rem; font-weight: 600;">
+                Сохранить результаты &rarr;
             </button>
         </div>
     </form>

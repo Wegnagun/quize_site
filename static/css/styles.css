@@ -275,3 +275,119 @@ footer { text-align: center; padding: 30px 0; color: var(--color-muted); font-si
     transform: scale(1.15);
     color: #00306e;
 }
+
+
+
+/* СТИЛИ НАШЕЙ ТАБЛИЦЫ И КОМПОНЕНТОВ */
+:root {
+    --primary-color: #2c3e50;
+    --accent-color: #3498db;
+    --success-bg: #d4edda;
+    --success-text: #155724;
+    --warning-bg: #fff3cd;
+    --warning-text: #856404;
+    --border-color: #dee2e6;
+}
+    
+.container { max-width: 1200px; }
+
+/* Стилизация всей таблицы */
+.master-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+thead th {
+    background-color: #f1f3f5;
+    color: var(--color-text);
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 14px 16px;
+    border-bottom: 2px solid var(--color-border);
+}
+
+tbody tr:nth-child(even) { background-color: #fafbfc; }
+tbody tr:hover { background-color: #f8f9fa; transition: background 0.2s; }
+
+td { 
+    padding: 16px; 
+    vertical-align: middle; 
+    position: relative; /* Важно для позиционирования индикатора */
+}
+
+/* КАСТОМНЫЙ ЧЕКБОКС (самое красивое здесь) */
+.native-check {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.custom-check {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 24px;
+    height: 24px;
+    background-color: #f1f3f5;
+    border: 2px solid #adb5bd;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    z-index: 1;
+}
+
+.mark-cell:hover .custom-check {
+    border-color: var(--color-primary);
+    background-color: #f8f9fa;
+}
+
+/* Когда галочка стоит */
+.native-check:checked + .custom-check {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+.native-check:checked + .custom-check::after {
+    content: "✓";
+    position: absolute;
+    display: block;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(1.1);
+    color: white;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+/* Адаптивность под мобильные устройства */
+@media (max-width: 768px) {
+    .master-table, .master-table thead, .master-table tbody, .master-table tr, .master-table td {
+        display: block;
+        width: 100%;
+    }
+    .master-table thead { 
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+    .master-table tr { 
+        margin-bottom: 15px; 
+        border: 1px solid var(--color-border);
+        border-radius: 8px;
+        padding-left: 60px;
+        position: relative;
+    }
+    .mark-cell { 
+        position: absolute; 
+        right: 15px; 
+        top: 50%; 
+        transform: translateY(-50%);
+        width: auto !important;
+    }
+}
