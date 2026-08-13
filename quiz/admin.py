@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django.contrib.auth.models import Group
-from django.db.models import Sum
+from django.db.models import Sum, F
 from .models import Team, Quiz, Block, Question, AnswerMark, TeamBlockResult
 
 
@@ -29,11 +29,10 @@ class TeamAdmin(admin.ModelAdmin):
 
     @admin.action(description="Обнулить очки выбранным командам")
     def zero_out_scores(self, request, queryset):
-        updated = queryset.update(score=0)
-        self.message_user(request, f"Очки обнулены у {updated} команд.")
+        teams_to_update = queryset.order_by()    
+        teams_to_update.update(score=0,)
         
     def get_queryset(self, request):
-        # Сортируем по общему счету всех раундов
         qs = super().get_queryset(request)
         return qs.annotate(
             total_score=Sum('block_results__marks__is_correct')
