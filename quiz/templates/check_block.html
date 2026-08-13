@@ -17,8 +17,8 @@
         <table class="master-table">
             <thead>
                 <tr>
-                    <th style="width: 70px;">№</th>
-                    <th>Вопрос</th>
+                    <th style="padding: 12px; width: 60px;">№</th>
+                    <th style="padding: 12px; min-width: 300px;">Вопрос</th>
                     
                     {# Динамические колонки команд #}
                     {% for team in teams %}
@@ -31,7 +31,7 @@
             <tbody>
                 {% for question in questions %}
                     <tr data-qid="{{ question.id }}">
-                        <td class="q-num text-center align-middle"><strong>{{ forloop.counter }}</strong></td>
+                        <td class="td-counter text-center align-middle"><strong>{{ forloop.counter }}</strong></td>
                         <td class="q-text" style="max-width: 400px; vertical-align: middle; line-height: 1.6;">
                             {{ question.text }}
                             {% if question.answer %}

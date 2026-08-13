@@ -311,6 +311,7 @@ thead th {
     text-transform: uppercase;
     padding: 14px 16px;
     border-bottom: 2px solid var(--color-border);
+    text-align: center;
 }
 
 tbody tr:nth-child(even) { background-color: #fafbfc; }
@@ -319,7 +320,14 @@ tbody tr:hover { background-color: #f8f9fa; transition: background 0.2s; }
 td { 
     padding: 16px; 
     vertical-align: middle; 
-    position: relative; /* Важно для позиционирования индикатора */
+    position: relative;
+}
+
+.td-counter { 
+    padding: 16px; 
+    vertical-align: middle; 
+    position: relative;
+    text-align: center;
 }
 
 /* КАСТОМНЫЙ ЧЕКБОКС (самое красивое здесь) */
