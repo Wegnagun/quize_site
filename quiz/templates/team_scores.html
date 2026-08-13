@@ -10,7 +10,7 @@
         <h2>{{ current_quiz.title }}</h2>
         <p>Выберите раунд для начала игры:</p>
         
-        <ul style="list-style: none; padding: 0; text-align: left; max-width: 500px; margin: 0 auto;">
+        <ul style="list-style: none; padding: 0; text-align: left; width: 600px; margin: 0 auto;">
             {% for block in current_quiz.blocks.all %}
                 <li style="padding: 15px; border: 1px solid var(--color-border); border-radius: 8px; margin-bottom: 10px; background: #fafafa;">
                     <strong>{{ block.title }}</strong>

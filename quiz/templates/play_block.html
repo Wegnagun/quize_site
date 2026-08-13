@@ -8,7 +8,7 @@
 
     <!-- ПАНЕЛЬ УПРАВЛЕНИЯ РАУНДОМ -->
     <div style="text-align: center; margin-bottom: 30px; padding: 15px; border-radius: 12px; background: linear-gradient(135deg, #037030, #10e04e); color: white; position: relative; overflow: hidden;">
-        <h1 style="margin: 0 0 5px 0; font-size: 2rem;">{{ quiz_block.title }} / {{ quiz_block.title }}</h1>
+        <h1 style="margin: 0 0 5px 0; font-size: 2rem;">{{ quiz_block.title }}</h1>
         
         <!-- Индикатор прогресса вопросов -->
         <div id="progress-bar" style="height: 5px; width: 0%; background-color: rgba(255,255,255,0.5); margin-top: 10px; transition: width 0.5s ease;"></div>
@@ -29,7 +29,6 @@
 
     <!-- КОНТЕЙНЕР ВОПРОСА -->
     <div id="question-area">
-        <!-- Контент будет вставлен сюда скриптом при клике -->
     </div>
 
 </div>
@@ -54,7 +53,6 @@ function renderQuestion(index) {
     const q = questions[index];
     const area = document.getElementById('question-area');
     
-    // Защита на случай пустого массива или ошибки индекса
     if (!q) return;
 
     let progressHtml = '';
@@ -95,13 +93,11 @@ function renderQuestion(index) {
 }
 
 // --- ЛОГИКА НАВИГАЦИИ ---
-
 function nextQuestion() {
     if (currentIndex < questions.length - 1) {
         currentIndex++;
         renderQuestion(currentIndex);
     } else {
-        // Если это был последний вопрос блока — возвращаемся к таблице лидеров
         window.location.href = "/check/" + blockId + "/";
     }
 }
@@ -127,7 +123,6 @@ function updateNavButtons(activeIndex) {
     });
 }
 
-// Прогресс-бар внизу
 function resetProgressBar() {
     const percent = ((currentIndex + 1) / questions.length) * 100;
     document.getElementById('progress-bar').style.width = percent + '%';

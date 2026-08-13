@@ -32,7 +32,7 @@
                 {% for question in questions %}
                     <tr data-qid="{{ question.id }}">
                         <td class="td-counter text-center align-middle"><strong>{{ forloop.counter }}</strong></td>
-                        <td class="q-text" style="max-width: 400px; vertical-align: middle; line-height: 1.6;">
+                        <td class="q-text" style="max-width: 400px; vertical-align: middle; line-height: 1.6; text-align: justify;">
                             {{ question.text }}
                             {% if question.answer %}
                                 <br><small style="color: #6c757d; display: inline-block; margin-top: 5px;">Ответ: {{ question.answer }}</small>

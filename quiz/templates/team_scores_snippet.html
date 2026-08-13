@@ -1,47 +1,46 @@
-<!-- Заголовок панели -->
-<div style="background-color: var(--color-primary); color: white; padding: 10px 15px; border-radius: 8px 8px 0 0; font-weight: bold;">
-    🏆 Набранные очки команд
-</div>
+<div style="max-width: 700px;">
+    <div style="background-color: var(--color-primary); color: white; padding: 10px 15px; border-radius: 8px 8px 0 0; font-weight: bold; font-size: 1.4rem; text-align: center;">
+        🏆 Набранные очки команд
+    </div>
 
-<div style="padding: 15px; background: #fff; border: 1px solid var(--color-border); border-top: none; border-radius: 0 0 8px 8px; height: calc(100% - 50px); overflow-y: auto;">
+    <div style="padding: 15px; background: #fff; border: 1px solid var(--color-border); border-top: none; border-radius: 0 0 8px 8px; height: calc(100% - 50px); overflow-y: auto;">
 
-    <!-- ИСПРАВЛЕНО: Используем TEAM_RANKING из context_processor -->
-    {% if TEAM_RANKING %}
-        
-        <table class="table table-sm" style="font-size: 0.85rem; margin-bottom: 10px;">
-            <thead style="background-color: #f1f3f5; position: sticky; top: 0; z-index: 1;">
-                <tr>
-                    <th style="width: 40px;">Место</th>
-                    <th>Команда</th>
-                    <th style="text-align: right; width: 70px;">Очки</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Цикл по уже отсортированному списку -->
-                {% for team in TEAM_RANKING %}
-                    <tr>
-                        <td><strong>{{ forloop.counter }}</strong></td>
-                        <td>{{ team.name }}</td>
-                        <td style="text-align: right;"><span class="badge bg-success">{{ team.score }}</span></td>
+        {% if TEAM_RANKING %}
+            
+            <table class="table table-sm" style="font-size: 1.4rem; margin-bottom: 10px;">
+                <thead style="background-color: #f1f3f5; position: sticky; top: 0; z-index: 1;">
+                    <tr style="text-align: center;">
+                        <th style="width: 40px;">Место</th>
+                        <th>Команда</th>
+                        <th style="text-align: center; width: 70px;">Очки</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        
-    {% else %}
-        <!-- Если квиз выбран, но команд нет -->
-        {% if CURRENT_QUIZ %}
-            <div class="alert alert-info text-center" style="margin-bottom: 0; font-size: 0.9rem;">
-                В текущем квизе пока нет команд.<br>
-                <a href="{% url 'add_team' %}" class="alert-link" style="display:block; margin-top:5px;">+ Добавить первую</a>
-            </div>
+                </thead>
+                <tbody>
+                    {% for team in TEAM_RANKING %}
+                        <tr>
+                            <td style="text-align: center;"><strong>{{ forloop.counter }}</strong></td>
+                            <td>{{ team.name }}</td>
+                            <td style="text-align: center;"><span class="badge bg-success">{{ team.score }}</span></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
         {% else %}
-            <!-- Если вообще нет квизов в базе -->
-            <div class="alert alert-warning text-center" style="margin-bottom: 0; font-size: 0.9rem;">
-                Квизы не созданы.<br>
-                <a href="{% url 'team_scores' %}" style="display:block; margin-top:5px;">Создать игру</a>
-            </div>
+            <!-- Если квиз выбран, но команд нет -->
+            {% if CURRENT_QUIZ %}
+                <div class="alert alert-info text-center" style="margin-bottom: 0; font-size: 0.9rem;">
+                    В текущем квизе пока нет команд.<br>
+                    <a href="{% url 'add_team' %}" class="alert-link" style="display:block; margin-top:5px;">+ Добавить первую</a>
+                </div>
+            {% else %}
+                <!-- Если вообще нет квизов в базе -->
+                <div class="alert alert-warning text-center" style="margin-bottom: 0; font-size: 0.9rem;">
+                    Квизы не созданы.<br>
+                    <a href="{% url 'team_scores' %}" style="display:block; margin-top:5px;">Создать игру</a>
+                </div>
+            {% endif %}
         {% endif %}
-    {% endif %}
 
+    </div>
 </div>
