@@ -1,8 +1,10 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.utils.html import format_html
 from django.contrib.auth.models import Group
 from django.db.models import Sum, F
+from django.shortcuts import get_object_or_404
 from .models import Team, Quiz, Block, Question, AnswerMark, TeamBlockResult
+from django.shortcuts import redirect
 
 
 class AnswerMarkInline(admin.TabularInline):
@@ -100,7 +102,7 @@ class TeamBlockResultInline(admin.TabularInline):
 
 @admin.register(TeamBlockResult)
 class TeamBlockResultAdmin(admin.ModelAdmin):
-    list_display = ('team_link', 'block_title', 'correct_count', 'total_points', 'status_badge', 'checked_at')
+    list_display = ('id', 'team_link', 'block_title', 'correct_count', 'total_points', 'status_badge', 'checked_at')
     list_filter = ('block__quiz', 'block', 'is_finished')
     search_fields = ('team__name', 'block__title')
     date_hierarchy = 'checked_at'
@@ -129,15 +131,49 @@ class TeamBlockResultAdmin(admin.ModelAdmin):
         self.message_user(request, f"Отмечено как проверенные: {updated}")
     mark_as_checked.short_description = "Отметить выбранные как «Проверено»"
 
+    @admin.action(description="Сбросить результаты выбранного раунда")
     def reset_team_block_result(self, request, queryset):
-        for res in queryset:
-            # Удаляем все галочки (AnswerMarks)
-            res.marks.all().delete()
-            # Сбрасываем счетчик вопросов и статус
-            res.current_question_index = 0
-            res.is_finished = False
-            res.save()
-        self.message_user(request, "Очки сброшены до 0, прогресс очищен.")
-    reset_team_block_result.short_description = "Сбросить результаты выбранной команды в раунде"
+        # 1. Получаем ID выбранных блоков
+        block_ids = list(queryset.values_list('id', flat=True))
+
+        print(f"DEBUG RESET: Выбранные блоки: {block_ids}")
+
+        # 2. Находим ВСЕ отметки во ВСЕХ этих блоках для ВСЕХ команд
+        all_marks_to_reset = AnswerMark.objects.filter(
+            question__block_id__in=block_ids
+        ).select_related('result__team')
+
+        updated_teams = set()
+
+        for mark in all_marks_to_reset:
+            team_obj = mark.result.team
+            
+            # Удаляем конкретную отметку
+            mark.delete()
+            
+            # Добавляем команду в список тех, чей счет нужно пересчитать
+            updated_teams.add(team_obj.id)
+
+        # 3. Пересчитываем общий счет ТОЛЬКО для затронутых команд
+        for team_id in updated_teams:
+            try:
+                team_obj = Team.objects.get(id=team_id)
+                
+                # Считаем сумму очков заново из базы данных
+                new_total = sum(
+                    res.block_score for res in 
+                    TeamBlockResult.objects.filter(team=team_obj).prefetch_related('marks')
+                )
+                
+                team_obj.score = new_total
+                team_obj.save(update_fields=['score'])
+                print(f"[RESET SUCCESS] {team_obj.name}: Новый итоговый счет = {new_total}")
+                
+            except Team.DoesNotExist:
+                continue
+
+        count = len(updated_teams)
+        self.message_user(request, f"Счет сброшен у {count} команд(ы).", messages.SUCCESS)
+        return redirect(request.get_full_path())
 
 admin.site.unregister(Group)

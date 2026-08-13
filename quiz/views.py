@@ -1,8 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.contrib import messages 
-from django.db.models import Sum
-from .models import Team, Quiz, Block, TeamBlockResult, AnswerMark, Question
+from .models import Team, Quiz, Block, TeamBlockResult, AnswerMark
 
 def team_scores(request):
     """Главная страница — только просмотр таблицы."""
@@ -66,7 +65,6 @@ def review_team_results(request, block_id, team_id):
     """
     block = get_object_or_404(Block, id=block_id)
     team = get_object_or_404(Team, id=team_id)
-    
     team_result, created = TeamBlockResult.objects.get_or_create(team=team, block=block)
     questions = block.questions.all().order_by('id')
     
@@ -85,13 +83,11 @@ def review_team_results(request, block_id, team_id):
             defaults={'is_correct': is_correct}
         )
         
-        # Переключаем на следующий вопрос
         if team_result.current_question_index < questions.count() - 1:
             team_result.current_question_index += 1
             team_result.save()
             return redirect('review_team_results', block_id=block.id, team_id=team.id)
         else:
-            # Вопросы закончились, помечаем как завершенное
             team_result.is_finished = True
             team_result.checked_at = timezone.now()
             team_result.save()
@@ -121,10 +117,8 @@ def review_team_results_next(request):
     if quiz:
         first_block = quiz.blocks.filter(questions__isnull=False).first()
 
-    # Если первый раунд существует, готовим флаги прогресса
     if first_block:
         for team in teams:
-            # Ищем существующую запись О ПРОВЕРКЕ этой команды в этом раунде
             existing_res = TeamBlockResult.objects.filter(team=team, block=first_block).first()
             
             if existing_res and existing_res.is_finished:
@@ -145,22 +139,13 @@ def review_team_results_next(request):
     }
     return render(request, 'team_scores.html', context)
 
-
-from django.shortcuts import render, get_object_or_404
-
-# quiz/views.py
-
 def check_block(request, block_id):
     """
     Страница "Судейская": сверка ответов команд по бумажке.
     """
     block = get_object_or_404(Block, id=block_id)
-    
-    # Получаем все объекты одним запросом к БД
     teams = list(Team.objects.all().order_by('-score', 'name'))
     questions = list(block.questions.all())
-    
-    # Собираем ВСЕ метки за этот блок в один словарь {team_id: {question_id: AnswerMark}}
     marks_map = {}
     all_marks = AnswerMark.objects.filter(
         result__block=block,
@@ -190,12 +175,7 @@ def save_marks(request, block_id):
         
     block = get_object_or_404(Block, id=block_id)
     teams = list(Team.objects.all().order_by('-score', 'name'))
-    
-    # Получаем СПИСОК отмеченных пар "TeamID_QuestionID"
     raw_marks = request.POST.getlist('marks') 
-    print(f"Сырые данные POST: {raw_marks}")
-    
-    # Преобразуем в словарь {TeamID: [List_of_Question_IDs]}
     submitted_data = {}
     for item in raw_marks:
         try:
@@ -206,22 +186,13 @@ def save_marks(request, block_id):
         except ValueError:
             continue
 
-    print(f"Парсинг завершен: {submitted_data}")
-
     for team in teams:
-        print(f"\n--- Обработка: {team.name} ---")
-        
         tr, _ = TeamBlockResult.objects.get_or_create(team=team, block=block)
-        
         correct_count = 0
-        
-        # Сначала удаляем старые метки этого раунда у этой команды
         AnswerMark.objects.filter(result=tr).delete()
         
         for question in block.questions.all():
             is_correct = str(question.id) in map(str, submitted_data.get(team.id, []))
-            
-            # Создаем запись о проверке
             AnswerMark.objects.create(
                 result=tr,
                 question=question,
@@ -230,24 +201,12 @@ def save_marks(request, block_id):
             
             if is_correct:
                 correct_count += 1
-                
-        print(f"[CALC] Правильных ответов в этом блоке: {correct_count}")
-        
-        # Сохраняем очки за ЭТОТ раунд
         tr.block_score = correct_count
         tr.is_finished = True
         tr.save() 
-        
-        # ПЕРЕСЧИТ ОБЩЕГО СЧЕТА КОМАНДЫ СУММАРНО
         total_from_db = sum(res.block_score for res in team.block_results.all())
-        
-        print(f"[UPDATE] Старый счет: {team.score}. Новый общий счет: {total_from_db}")
-        
         team.score = total_from_db
-        team.save() # <-- КРИТИЧЕСКИ ВАЖНО!
-        
-        fresh = Team.objects.get(id=team.id)
-        print(f"[DB SUCCESS] Финальный Score в базе теперь: {fresh.score}")
+        team.save()
 
     messages.success(request, "Очки сохранены!")
     return redirect('team_scores')
