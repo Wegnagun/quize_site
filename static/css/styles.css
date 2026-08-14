@@ -3,20 +3,20 @@
     --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     
     /* Цвета */
-    --color-bg: #f0f4f8; /* Сделали фон чуть серее для снижения нагрузки на глаза */
-    --color-text: #1a202c; /* Очень темный текст для максимального контраста */
+    --color-bg: #f0f4f8;
+    --color-text: #1a202c; 
     --color-muted: #718096;
     --color-white: #ffffff;
     
     /* ОСНОВНОЙ ЗЕЛЕНЫЙ (для главных кнопок) */
-    --color-primary: #38a169; /* Более глубокий зеленый для хедера */
+    --color-primary: #38a169; 
     --color-primary-dark: #2f855a;
     
     /* АКЦЕНТНЫЙ ЗЕЛЕНЫЙ (для ссылок/второстепенных кнопок .btn-outline) */
-    --color-accent: #2cc836; /* Яркий салатовый для акцентов */
+    --color-accent: #2cc836; 
     
     --color-danger: #e53e3e;       
-    --color-border: #cbd5e0; /* Четкие границы таблиц */
+    --color-border: #cbd5e0; 
     --color-card-bg: #ffffff;
 }
 
@@ -30,21 +30,21 @@ body {
 }
 
 .container {
-    max-width: 1200px; /* Увеличили ширину контейнера под большую таблицу */
+    max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
 }
 
-/* --- КНОПКИ (Общий стиль — увеличены) --- */
+/* --- КНОПКИ --- */
 .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 14px 28px; /* Увеличен внутренний отступ */
+    padding: 14px 28px; 
     border-radius: 50px;
     text-decoration: none;
-    font-weight: 700; /* Жирный шрифт */
-    font-size: 1.1rem; /* Крупнее размер */
+    font-weight: 700; 
+    font-size: 1.1rem; 
     cursor: pointer;
     transition: all 0.3s ease;
     min-width: 180px;
@@ -107,7 +107,7 @@ body {
     display: block;
     margin-bottom: 8px;
     font-weight: 600;
-    font-size: 1rem; /* Подписи крупнее */
+    font-size: 1rem; 
 }
 
 .form-group input {
@@ -115,7 +115,7 @@ body {
     padding: 14px 16px;
     border: 1px solid var(--color-border);
     border-radius: 6px;
-    font-size: 1.1rem; /* Текст ввода крупнее */
+    font-size: 1.1rem;
     box-sizing: border-box;
 }
 
@@ -130,10 +130,10 @@ table {
     width: 100%;
     border-collapse: collapse;
     background: var(--color-card-bg);
-    border-radius: 12px; /* Скругление углов таблицы */
+    border-radius: 12px; 
     overflow: hidden;
     box-shadow: 0 6px 16px rgba(0,0,0,0.08);
-    font-size: 1.2rem; /* Глобальный размер текста в таблице */
+    font-size: 1.2rem;
 }
 
 thead {
@@ -141,7 +141,7 @@ thead {
 }
 
 th, td {
-    padding: 20px 24px; /* Большие внутренние отступы строк */
+    padding: 20px 24px;
     text-align: left;
     border-bottom: 2px solid var(--color-border);
 }
@@ -170,7 +170,7 @@ tbody tr:hover { background-color: #ebf8ff; }
 }
 
 .place { 
-    font-weight: 900; /* Место жирным черным */
+    font-weight: 900; 
     color: var(--color-text); 
     width: 80px; 
     font-size: 1.3rem;
@@ -196,8 +196,14 @@ footer { text-align: center; padding: 30px 0; color: var(--color-muted); font-si
     z-index: 100;
 }
 
+.site-header1 {
+    display: flex;
+    flex-direction: row;
+    color: rgb(14, 142, 38);
+    padding: 20px 0;
+}
+
 .header-content {
-    max-width: 1200px;
     margin: 0 auto;
     display: flex;
     justify-content: space-between;

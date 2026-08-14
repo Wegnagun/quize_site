@@ -9,9 +9,12 @@
 <body>
 
 <div class="layout-grid">
-    <header class="site-header" style="background: linear-gradient(135deg, #037030, #10e04e); ">
-        <div class="container header-content">
-            <h1>Квиз день УТРД ФТС России</h1>
+    <header class="site-header1" style="background: linear-gradient(135deg,#cbfed8, #037030 ); ">
+        <div style="width: 450px; height: 170px; justify-self: left; margin-left: 30px;">
+            <img src="{% static 'img/35.png' %}" alt="Лого ФТС 35 лет" style="width: 100%; height: 100%; ">
+        </div>
+        <div style="margin-left: 180px;">
+            <h1>Квиз в честь дня УТРД ФТС России</h1>
             <div class="nav-buttons">
                 <a href="{% url 'team_scores' %}" class="btn btn-outline-menu">Таблица команд</a>
                 <a href="{% url 'add_team' %}" class="btn btn-outline-menu">Добавить команду</a>
