@@ -64,27 +64,53 @@
 ### Загрузка вопросов из JSON
 Загружает вопросы из файла в указанный раунд (`Block`). Если раунда нет — создаст его автоматически.
 
+## Формат JSON-файла:
+```bash
+[
+  {"text": "Столица России?", "answer": "Москва"},
+  {"text": "Год основания Москвы?", "answer": "1147"}
+]
+```
+
 **Синтаксис:**
 ```bash
-python manage.py load_questions --quiz-id {ID} --block-title "{Название блока}" --path "путь/к/файлу.json"```
-Пример: python manage.py load_questions --quiz-id 1
-
-### Загрузка вопросов из JSON
-Загружает вопросы из файла в указанный раунд (`Block`). Если раунда нет — создаст его автоматически.
-
+python manage.py load_questions --quiz-id {ID} --block-title "{Название блока}" --path "путь/к/файлу.json"
+```
+---
+**Пример**
+```bash
+python manage.py load_questions --quiz-id 1
+```
+---
+### Cоздание раундов
 **Синтаксис:**
 ```bash
-python manage.py generate_rounds --quiz-id {айди квиза} --questions-per-round {количество вопросов в раунде}```
+python manage.py generate_rounds --quiz-id {айди квиза} --questions-per-round {количество вопросов в раунде}
+```
 Пример: python manage.py generate_rounds --quiz-id 1 --questions-per-round 8
-
-### создание раундов
-**Синтаксис:**
+**Пример**
 ```bash
-python manage.py generate_rounds --quiz-id {айди квиза} --questions-per-round {количество вопросов в раунде}```
-Пример: python manage.py generate_rounds --quiz-id 1 --questions-per-round 8
-
+python manage.py generate_rounds --quiz-id 1 --questions-per-round 8
+```
+---
 ### Поиск дубликатов вопросов в раундах
 **Синтаксис:**
 ```bash
-python manage.py search_dublicates --quiz-id {айди квиза, int, необзятельный} --aq {айди блока всех вопросов, int, обязательный}```
-Пример: python manage.py generate_rounds --quiz-id 1 --questions-per-round 8
+python manage.py search_dublicates --quiz-id {айди квиза, int, необзятельный} --aq {айди блока всех вопросов, int, обязательный}
+```
+**Пример**
+```bash
+python manage.py manage.py search_dublicates --aq 5
+```
+
+## Архитектура моделей (models.py)
+
+    Quiz: Контейнер игры («Вечерний квиз»).
+    Block: Тематический раунд («История кино»). Связан с Quiz.
+    Question: Конкретный вопрос. Привязан к Block.
+    Team: Команда-участник.
+    TeamBlockResult: Промежуточная таблица-связка. Хранит счет конкретной команды за конкретный раунд.
+    AnswerMark: Сущность для судейской проверки. Связывает Команду, Раунд и Вопрос, храня флаг правильности ответа.
+
+
+
