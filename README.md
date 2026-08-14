@@ -33,8 +33,7 @@
 
 3.  **Установка зависимостей:**
     ```bash
-    pip install django==5.*
-    pip freeze > requirements.txt
+    pip install requirements.txt
     ```
 
 4.  **Миграции базы данных:**
@@ -67,4 +66,25 @@
 
 **Синтаксис:**
 ```bash
-python manage.py load_questions --quiz-id {ID} --block-title "{Название блока}" --path "путь/к/файлу.json"
+python manage.py load_questions --quiz-id {ID} --block-title "{Название блока}" --path "путь/к/файлу.json"```
+Пример: python manage.py load_questions --quiz-id 1
+
+### Загрузка вопросов из JSON
+Загружает вопросы из файла в указанный раунд (`Block`). Если раунда нет — создаст его автоматически.
+
+**Синтаксис:**
+```bash
+python manage.py generate_rounds --quiz-id {айди квиза} --questions-per-round {количество вопросов в раунде}```
+Пример: python manage.py generate_rounds --quiz-id 1 --questions-per-round 8
+
+### создание раундов
+**Синтаксис:**
+```bash
+python manage.py generate_rounds --quiz-id {айди квиза} --questions-per-round {количество вопросов в раунде}```
+Пример: python manage.py generate_rounds --quiz-id 1 --questions-per-round 8
+
+### Поиск дубликатов вопросов в раундах
+**Синтаксис:**
+```bash
+python manage.py search_dublicates --quiz-id {айди квиза, int, необзятельный} --aq {айди блока всех вопросов, int, обязательный}```
+Пример: python manage.py generate_rounds --quiz-id 1 --questions-per-round 8
