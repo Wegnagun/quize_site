@@ -69,7 +69,7 @@ class QuizAdmin(admin.ModelAdmin):
 
 @admin.register(Block)
 class BlockAdmin(admin.ModelAdmin):
-    list_display = ('title', 'quiz', 'order')
+    list_display = ('id', 'title', 'quiz', 'order')
     list_filter = ('quiz',)
     ordering = ('quiz__title', 'order')
     search_fields = ('title', 'quiz__title')

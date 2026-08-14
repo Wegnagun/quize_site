@@ -12,26 +12,28 @@
         <p>Выберите раунд для начала игры:</p>
         <ul style="list-style: none; padding: 0; text-align: left; width: 600px; margin: 0 auto;">
             {% for block in current_quiz.blocks.all %}
-                <li style="padding: 15px; border: 1px solid var(--color-border); border-radius: 8px; margin-bottom: 10px; background: #fafafa;">
-                    <strong>{{ block.title }}</strong>
-                    <span style="float: right; color: #666;">({{ block.questions.count }} вопросов)</span>
-                    <br>
-                    <br>
-                    {% if blocks_status|get_item:block.id %}
-                        <div style="
-                            align-self: end; 
-                            top: 10px; 
-                            right: 15px;
-                            font-size: 1.8rem; 
-                            color: #198756; /* Зеленый */
-                            animation: bounce-in 0.5s ease-out;
-                        ">
-                           Раунд пройден &#10004;
-                        </div>
-                    {% else %}
-                        <a href="{% url 'play_block' block.id %}" class="btn btn-outline" style="margin-top: 10px;">Начать раунд</a>
-                    {% endif %}
-                </li>
+                {% if block.title != "Все вопросы"%}
+                    <li style="padding: 15px; border: 1px solid var(--color-border); border-radius: 8px; margin-bottom: 10px; background: #fafafa;">
+                        <strong>{{ block.title }}</strong>
+                        <span style="float: right; color: #666;">({{ block.questions.count }} вопросов)</span>
+                        <br>
+                        {% if blocks_status|get_item:block.id %}
+                            <div style="
+                                align-self: end; 
+                                top: 10px; 
+                                right: 15px;
+                                font-size: 1.8rem; 
+                                color: #198756; /* Зеленый */
+                                animation: bounce-in 0.5s ease-out;
+                            ">
+                            Раунд завершен &#10004;
+                            </div>
+                        {% else %}
+                            <br>
+                            <a href="{% url 'play_block' block.id %}" class="btn btn-outline" style="margin-top: 10px;">Начать раунд</a>
+                        {% endif %}
+                    </li>
+                {% endif %}
             {% empty %}
                 <p class="no-data">В этом квизе еще нет тематических блоков.</p>
             {% endfor %}

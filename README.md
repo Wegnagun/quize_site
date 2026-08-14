@@ -1,15 +1,70 @@
-python -m venv venv
-source venv/bin/activate
-pip freeze > requirements.txt
-python manage.py runserver
+# Quiz Management System
 
+Система управления квизами с разделением на раунды (темы), автоматической проверкой дублей вопросов и удобным интерфейсом судейства.
 
-загрузка вопросов
-python manage.py load_questions --quiz-id {айди квиза} --block-title {наименование блока где будут все вопросы, по умолчанию "Все вопросы"} --path {путь к файлу по умолчанию 'quiz/data/questions.json'}
+## Описание системы
 
-Пример: python manage.py load_questions --quiz-id 1
+Проект предназначен для проведения интеллектуальных игр. Позволяет загружать вопросы из JSON, распределять их по темам (раундам) и проверять базу данных на наличие дубликатов.
 
-создание раундов
-python manage.py generate_rounds --quiz-id {айди квиза} --questions-per-round {количество вопросов в раунде}
+## Стек технологий
 
-Пример: python manage.py generate_rounds --quiz-id 1 --questions-per-round 8
+*   **Backend:** Python 3.x, Django 5.x
+*   **База данных:** SQLite (по умолчанию)
+*   **Управление зависимостями:** pip + venv
+
+---
+
+## Установка и запуск локально
+
+1.  **Клонирование репозитория:**
+    ```bash
+    git clone <ссылка_на_репозиторий>
+    cd quiz_project
+    ```
+
+2.  **Создание виртуального окружения:**
+    ```bash
+    python -m venv venv
+    
+    # Активация:
+    source venv/bin/activate      # Для Linux/macOS
+    .\venv\Scripts\activate       # Для Windows
+    ```
+
+3.  **Установка зависимостей:**
+    ```bash
+    pip install django==5.*
+    pip freeze > requirements.txt
+    ```
+
+4.  **Миграции базы данных:**
+    Примените миграции для создания таблиц:
+    ```bash
+    python manage.py migrate
+    ```
+
+5.  **Запуск сервера:**
+    ```bash
+    python manage.py runserver
+    ```
+    Откройте браузер по адресу [http://127.0.0.1:8000](http://127.0.0.1:8000).
+
+6.  **Админ-панель:**
+    Создайте суперпользователя:
+    ```bash
+    python manage.py createsuperuser
+    ```
+    Перейдите по адресу [http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/) для загрузки тем (блоков) и вопросов вручную.
+
+---
+
+## Управление через консоль (Management Commands)
+
+Все основные операции выполняются через утилиту `manage.py`.
+
+### Загрузка вопросов из JSON
+Загружает вопросы из файла в указанный раунд (`Block`). Если раунда нет — создаст его автоматически.
+
+**Синтаксис:**
+```bash
+python manage.py load_questions --quiz-id {ID} --block-title "{Название блока}" --path "путь/к/файлу.json"

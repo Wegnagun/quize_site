@@ -17,12 +17,12 @@
         <table class="master-table">
             <thead>
                 <tr>
-                    <th style="padding: 12px; width: 60px;">№</th>
-                    <th style="padding: 12px; min-width: 300px;">Вопрос</th>
+                    <th style="padding: 12px; width: 60px; position: sticky; top: 0; z-index: 10; background-color: #f8fafb;">№</th>
+                    <th style="padding: 12px; min-width: 300px; position: sticky; top: 0; z-index: 10; background-color: #f8fafb;">Вопрос</th>
                     
                     {# Динамические колонки команд #}
                     {% for team in teams %}
-                        <th class="header-team text-center" title="{{ team.name }}">
+                        <th style="padding: 12px; min-width: 100px; max-width: 155px; position: sticky; top: 0; z-index: 10; background-color: #f8fafb;" title="{{ team.name }}">
                             {{ team.name }}
                         </th>
                     {% endfor %}
