@@ -13,6 +13,3 @@ python manage.py load_questions --quiz-id {айди квиза} --block-title {�
 python manage.py generate_rounds --quiz-id {айди квиза} --questions-per-round {количество вопросов в раунде}
 
 Пример: python manage.py generate_rounds --quiz-id 1 --questions-per-round 8
-
-
-

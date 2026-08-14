@@ -6,8 +6,16 @@ from .models import Team, Quiz, Block, TeamBlockResult, AnswerMark
 def team_scores(request):
     """Главная страница — только просмотр таблицы."""
     teams = Team.objects.all().order_by('-score', 'name')
-    current_quiz = Quiz.objects.last() 
-    context = {'teams': teams, 'current_quiz':current_quiz}
+    current_quiz = Quiz.objects.last()
+    blocks_status = {}
+    for block in current_quiz.blocks.all():
+        has_res = TeamBlockResult.objects.filter(block=block).exists()
+        blocks_status[block.id] = has_res
+    context = {
+        'teams': teams, 
+        'current_quiz':current_quiz, 
+        'blocks_status':blocks_status
+        }
     return render(request, 'team_scores.html', context)
 
 def add_team_form(request):
@@ -107,37 +115,6 @@ def review_team_results(request, block_id, team_id):
     }
     return render(request, 'review_team.html', context)
 
-
-def review_team_results_next(request):
-    """Главная страница — таблица лидеров с прогрессом раундов."""
-    teams = Team.objects.all().order_by('-score', 'name')
-    quiz = Quiz.objects.last()
-    
-    first_block = None
-    if quiz:
-        first_block = quiz.blocks.filter(questions__isnull=False).first()
-
-    if first_block:
-        for team in teams:
-            existing_res = TeamBlockResult.objects.filter(team=team, block=first_block).first()
-            
-            if existing_res and existing_res.is_finished:
-                team.round_1_done = True
-                
-                next_b = quiz.blocks.filter(id__gt=first_block.id).order_by('id').first()
-                team.next_block = next_b
-                team.has_next = bool(next_b)
-            else:
-                team.round_1_done = False
-                team.next_block = None
-                team.has_next = False
-                
-    context = {
-        'teams': teams,
-        'quiz': quiz,
-        'first_block': first_block,
-    }
-    return render(request, 'team_scores.html', context)
 
 def check_block(request, block_id):
     """
