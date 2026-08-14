@@ -10,14 +10,14 @@ from django.shortcuts import redirect
 class AnswerMarkInline(admin.TabularInline):
     """Отметки о правильности ответов ВНУТРИ вопроса."""
     model = AnswerMark
-    extra = 0  # Не показываем пустые строки по умолчанию
+    extra = 0 
     fields = ('question', 'is_correct')
-    readonly_fields = ('question',) # Вопрос нельзя менять из формы отметки
+    readonly_fields = ('question',)
     verbose_name = "Ответ"
     verbose_name_plural = "Ответы команд"
     
     def has_add_permission(self, request, obj=None):
-        return False # Добавляем только через автоматический подсчет
+        return False
     
 
 @admin.register(Team)
@@ -62,7 +62,7 @@ class BlockInline(admin.TabularInline):
 @admin.register(Quiz)
 class QuizAdmin(admin.ModelAdmin):
     """Отображение квизов в админке."""
-    list_display = ('title',)
+    list_display = ('id', 'title',)
     search_fields = ('title',)
     inlines = [BlockInline]
 

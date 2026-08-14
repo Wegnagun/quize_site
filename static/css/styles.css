@@ -18,6 +18,7 @@
     --color-danger: #e53e3e;       
     --color-border: #cbd5e0; 
     --color-card-bg: #ffffff;
+    --color-btn-menu: linear-gradient(135deg,#037030,#cbfed8);
 }
 
 /* --- БАЗОВЫЕ СТИЛИ BODY И КОНТЕЙНЕРА --- */
