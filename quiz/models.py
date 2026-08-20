@@ -130,6 +130,7 @@ class Task(models.Model):
     """Тематическая задача или спецраунд."""
     title = models.CharField(max_length=250, verbose_name='Название задачи')
     description = models.TextField(verbose_name='Описание задания', blank=True)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='tasks', verbose_name='Связана с квизом')
     
     class Meta:
         verbose_name = 'Задача'
