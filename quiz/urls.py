@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (team_scores, add_team_form, save_team, 
-                    play_block, check_block, save_marks, check_block)
+                    play_block, check_block, save_marks, check_block, super_game)
 
 urlpatterns = [
     path('', team_scores, name='team_scores'),
@@ -9,4 +9,5 @@ urlpatterns = [
     path('block/<int:block_id>/', play_block, name='play_block'),
     path('check/<int:block_id>/', check_block, name='check_block'),
     path('save_marks/<int:block_id>/', save_marks, name='save_marks'),
+    path('supergame/', super_game, name='supergame'),
 ]

@@ -240,7 +240,7 @@ footer { text-align: center; padding: 30px 0; color: var(--color-muted); font-si
 }
 
 .question-text {
-    font-size: 2rem; /* Вопрос огромный */
+    font-size: 2rem; 
     line-height: 1.4;
     color: var(--color-text);
     margin-bottom: 40px;
@@ -405,4 +405,154 @@ td {
         border-left: none;
         padding: 30px 20px;
     }
+}
+
+/* --- СТИЛИ ДЛЯ СУПЕРИГРЫ (ЗОЛОТАЯ КНОПКА) --- */
+.btn-gold {
+    background: linear-gradient(145deg, #f9c54d, #e6b800);
+    color: #333 !important;
+    border: 2px solid #ffd700;
+    box-shadow: 0 4px 15px rgba(212, 165, 45, 0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-gold:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(212, 165, 45, 0.4), 0 2px 4px rgba(0,0,0,0.1);
+    background: linear-gradient(145deg, #f9d163, #fce38a);
+    color: #2c3e50 !important;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+}
+
+.btn-gold:active {
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+
+
+/* СТИЛИ ДЛЯ СУПЕРИГРЫ */
+
+.supergame-main-container {
+    display: flex;
+    flex-direction: row;
+    margin: 10px auto;
+    text-align: center;
+}
+
+.supergame-task-container {
+    max-width: 500px;
+    margin: 40px auto;
+    text-align: center;
+}
+
+.supergame-text {
+    font-size: 2rem; 
+    line-height: 1.4;
+    color: var(--color-text);
+    margin-bottom: 40px;
+    padding: 30px;
+    border: 3px dashed var(--color-border);
+    border-radius: 16px;
+}
+
+/* --- КОНТЕЙНЕР СТРАНИЦЫ ПРОВЕРКИ --- */
+.check-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* ГЛАВНАЯ СЕТКА МАТРИЦЫ */
+.matrix-grid {
+    display: grid;
+    
+    /* 
+       Первая колонка - под названия команд (ширина фиксирована),
+       Остальные колонки - под блоки с задачами.
+       repeat(auto-fill, minmax(300px, 1fr)) означает:
+       "Повторяй колонки шириной минимум 300px, растягивая их равномерно"
+    */
+    grid-template-columns: minmax(250px, 250px) repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px; /* Расстояние между ячейками */
+}
+
+/* ЗАГОЛОВОК БЛОКА (Раунда) СВЕРХУ */
+.grid-block-header {
+    background-color: #f8f9fa;
+    color: var(--color-text);
+    font-weight: 600;
+    text-align: center;
+    padding: 12px 10px;
+    border-radius: 8px;
+    border-bottom: 2px solid var(--color-primary);
+    position: relative;
+    z-index: 2;
+}
+
+.grid-task {
+    background-color: #f8fafb;
+    padding: 12px 15px;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 8px;
+    border-right: 2px solid var(--color-border);
+    border-bottom: 2px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    left: 0;
+    z-index: 10;
+    background: linear-gradient(to right, white, rgba(255,255,255,0.8));
+}
+
+/* ЯЧЕЙКА ДАННЫХ (Пересечение Команда x Задача) */
+.grid-data-cell {
+    background: white;
+    border: 1px solid var(--color-border);
+    border-top: none;
+    border-left: none;
+    height: 80px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+
+/* Индикатор выполнения внутри ячейки */
+.status-indicator {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.status-pending { 
+    background-color: #e9ecef; 
+    color: #6c757d; 
+    border: 2px dashed #adb5bd;
+}
+
+.status-done { 
+    background-color: #d1e7dd; 
+    color: #0f5132; 
+    border: 2px solid #198754;
+}
+
+/* Галочка поверх ячейки */
+.status-check-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 1.5rem;
+    opacity: 0.9;
 }

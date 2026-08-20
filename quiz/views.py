@@ -1,7 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.contrib import messages 
-from .models import Team, Quiz, Block, TeamBlockResult, AnswerMark
+from .models import Team, Quiz, Block, TeamBlockResult, AnswerMark, Task, Task_question
+import random
 
 def team_scores(request):
     """Главная страница — только просмотр таблицы."""
@@ -187,3 +188,29 @@ def save_marks(request, block_id):
 
     messages.success(request, "Очки сохранены!")
     return redirect('team_scores')
+
+
+
+def super_game(request):
+    """
+    Страница Суперигры: отображает все Задачи для всех Команд сразу.
+    """
+    teams = Team.objects.all().order_by('-score', 'name')
+    all_tasks = Task.objects.all().order_by('title')
+    suffle_tasks = [i[0] for i in all_tasks.values_list('id')]
+    random.shuffle(suffle_tasks)
+    teams_tasks_zip = zip(teams.values_list('id'), suffle_tasks)
+    teams_tasks = {}
+    for i in teams_tasks_zip:
+        teams_tasks[i[0][0]] = Task.objects.get(id=i[1])
+
+    questions = Task_question.objects.all()
+
+    context = {
+        'teams': teams,
+        'tasks': all_tasks,
+        'teams_tasks': teams_tasks,
+        'questions': questions
+    }
+
+    return render(request, 'super_game.html', context)

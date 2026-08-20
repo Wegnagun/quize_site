@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load dict_extras %}
+
+{% block title %}Супер раунд{% endblock %}
+
+{% block content %}
+<div >
+    <div class="check-container">
+        <div class="matrix-grid">
+            {% for team in teams %}
+            {% with team_task=teams_tasks|get_item:team.id %}
+                <div class="grid-block-header">
+                    {% with task_q=questions|filter_tasks:team_task.id %}
+                    Вопрос команды: <br> {{ team.name }}
+                    {% for q in task_q %}
+                        <p>{{ q }}</p>
+                    {% endfor %}
+                    {% endwith %}
+                </div>
+                <div class="grid-task">
+                    {{ team_task.description }}
+                </div>
+            {% endwith %}
+            {% endfor %}
+        </div>
+    </div>
+    <button type="submit" class="btn btn-gold" style="width: 400px; margin: 0 auto; font-weight: bold;">
+        Сохранить результаты &rarr;
+    </button>
+</div>
+{% endblock %}

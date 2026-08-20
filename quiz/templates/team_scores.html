@@ -37,11 +37,17 @@
             {% empty %}
                 <p class="no-data">В этом квизе еще нет тематических блоков.</p>
             {% endfor %}
+                    <!-- ССЫЛКА НА СУПЕРИГРУ -->
+            <li style="padding: 15px; border: 1px solid var(--color-border); border-radius: 8px; margin-bottom: 10px; background: #fafafa;">
+                <a href="{% url 'supergame' %}" 
+                class="btn btn-gold" 
+                title="Переход к финальным вопросам"
+                style="min-width: 200px; font-weight: bold;">
+                    🏆🏆🏆 Суперигра - Раунд с задачей 🏆🏆🏆
+                </a>
+            </li>
+
         </ul>
-    {% else %}
-        <h2>Добро пожаловать!</h2>
-        <p class="lead">Список активных игр пуст.</p>
-        <a href="{% url 'add_team' %}" class="btn btn-primary">Создать первую игру</a>
     {% endif %}
 </div>
 {% endblock %}
