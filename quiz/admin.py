@@ -3,7 +3,7 @@ from django.utils.html import format_html
 from django.contrib.auth.models import Group
 from django.db.models import Sum, F
 from django.shortcuts import get_object_or_404
-from .models import Team, Quiz, Block, Question, AnswerMark, TeamBlockResult
+from .models import Team, Quiz, Block, Question, AnswerMark, TeamBlockResult, Task, Task_question
 from django.shortcuts import redirect
 
 
@@ -133,12 +133,7 @@ class TeamBlockResultAdmin(admin.ModelAdmin):
 
     @admin.action(description="Сбросить результаты выбранного раунда")
     def reset_team_block_result(self, request, queryset):
-        # 1. Получаем ID выбранных блоков
         block_ids = list(queryset.values_list('id', flat=True))
-
-        print(f"DEBUG RESET: Выбранные блоки: {block_ids}")
-
-        # 2. Находим ВСЕ отметки во ВСЕХ этих блоках для ВСЕХ команд
         all_marks_to_reset = AnswerMark.objects.filter(
             question__block_id__in=block_ids
         ).select_related('result__team')
@@ -147,19 +142,13 @@ class TeamBlockResultAdmin(admin.ModelAdmin):
 
         for mark in all_marks_to_reset:
             team_obj = mark.result.team
-            
-            # Удаляем конкретную отметку
             mark.delete()
-            
-            # Добавляем команду в список тех, чей счет нужно пересчитать
             updated_teams.add(team_obj.id)
 
-        # 3. Пересчитываем общий счет ТОЛЬКО для затронутых команд
         for team_id in updated_teams:
             try:
                 team_obj = Team.objects.get(id=team_id)
                 
-                # Считаем сумму очков заново из базы данных
                 new_total = sum(
                     res.block_score for res in 
                     TeamBlockResult.objects.filter(team=team_obj).prefetch_related('marks')
@@ -167,7 +156,6 @@ class TeamBlockResultAdmin(admin.ModelAdmin):
                 
                 team_obj.score = new_total
                 team_obj.save(update_fields=['score'])
-                print(f"[RESET SUCCESS] {team_obj.name}: Новый итоговый счет = {new_total}")
                 
             except Team.DoesNotExist:
                 continue
@@ -175,5 +163,32 @@ class TeamBlockResultAdmin(admin.ModelAdmin):
         count = len(updated_teams)
         self.message_user(request, f"Счет сброшен у {count} команд(ы).", messages.SUCCESS)
         return redirect(request.get_full_path())
+
+class TaskQuestionInline(admin.TabularInline):
+    """
+    Позволяет редактировать вопросы задачи прямо на странице самой Задачи.
+    TabularInline делает это в виде компактной таблицы.
+    """
+    model = Task_question
+    extra = 1 
+    fields = ('question', 'answer')
+    verbose_name = "Вопрос задачи"
+    verbose_name_plural = "Вопросы задачи"
+
+
+@admin.register(Task)
+class TaskAdmin(admin.ModelAdmin):
+    """Админка для Спецзадач."""
+    list_display = ('title', 'description_preview')
+    search_fields = ('title',)
+    inlines = [TaskQuestionInline]
+    ordering = ('title',)
+    
+    def description_preview(self, obj):
+        """Обрезает описание для списка в админке"""
+        if obj.description:
+            return obj.description[:75] + ("..." if len(obj.description) > 75 else "")
+        return "-"
+    description_preview.short_description = 'Описание'
 
 admin.site.unregister(Group)

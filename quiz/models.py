@@ -124,4 +124,35 @@ class AnswerMark(models.Model):
     def __str__(self):
         mark = "✅" if self.is_correct else "❌"
         return f"{mark} Вопрос {self.question.id} для {self.result.team.name}"
+
+
+class Task(models.Model):
+    """Тематическая задача или спецраунд."""
+    title = models.CharField(max_length=250, verbose_name='Название задачи')
+    description = models.TextField(verbose_name='Описание задания', blank=True)
     
+    class Meta:
+        verbose_name = 'Задача'
+        verbose_name_plural = 'Задачи'
+        
+    def __str__(self):
+        return self.title
+
+
+class Task_question(models.Model):
+    """Вопросы к задачам."""
+    question = models.CharField(max_length=250, verbose_name='Текст вопроса')
+    answer = models.CharField(
+            max_length=250, 
+            verbose_name="Правильный ответ", 
+            blank=True, 
+            help_text="Для ведущего: правильный вариант"
+        )
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='task')
+    
+    class Meta:
+        verbose_name = 'Вопросы задачи'
+        verbose_name_plural = 'Вопросы задачи'
+        
+    def __str__(self):
+        return self.question
