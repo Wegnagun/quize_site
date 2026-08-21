@@ -87,7 +87,6 @@ python manage.py load_questions --quiz-id 1
 ```bash
 python manage.py generate_rounds --quiz-id {айди квиза} --questions-per-round {количество вопросов в раунде}
 ```
-Пример: python manage.py generate_rounds --quiz-id 1 --questions-per-round 8
 **Пример**
 ```bash
 python manage.py generate_rounds --quiz-id 1 --questions-per-round 8
