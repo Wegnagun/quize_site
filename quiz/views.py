@@ -189,8 +189,6 @@ def save_marks(request, block_id):
     messages.success(request, "Очки сохранены!")
     return redirect('team_scores')
 
-
-
 def super_game(request):
     """
     Страница Суперигры: отображает все Задачи для всех Команд сразу.
@@ -214,3 +212,16 @@ def super_game(request):
     }
 
     return render(request, 'super_game.html', context)
+
+def save_task_result(request):
+    """
+    Сохраняет ответы судей для Суперигры.
+    За каждый отмеченный вопрос начисляется 1 балл.
+    """
+    if request.method == 'POST':
+        data = request.POST.getlist('mark')
+
+    result_
+
+    print(data)
+    return redirect('supergame')
