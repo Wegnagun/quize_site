@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpResponseNotAllowed
 from django.utils import timezone
 from django.contrib import messages 
 from .models import Team, Quiz, Block, TeamBlockResult, AnswerMark, Task, Task_question
@@ -218,10 +219,24 @@ def save_task_result(request):
     Сохраняет ответы судей для Суперигры.
     За каждый отмеченный вопрос начисляется 1 балл.
     """
-    if request.method == 'POST':
-        data = request.POST.getlist('mark')
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
 
-    result_
+    data = request.POST.getlist('mark')
+    team_list = []
+    team_point = {}
 
-    print(data)
+    for team_points in data:
+        team, _ = team_points.split('_')
+        team_list.append(team)
+        team_point[team] = team_point.get(team, 0) + 1
+
+    teams = Team.objects.filter(id__in=team_list)
+
+    for team in teams:
+        team_obj = team
+        print(team_point[str(team.id)])
+        team_obj.score = team_obj.score + team_point[str(team.id)]
+        team_obj.save()
+
     return redirect('supergame')
