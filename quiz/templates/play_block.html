@@ -40,7 +40,8 @@ const questions = [
         {
             id: {{ question.id }},
             text: "{{ question.text|escapejs }}",
-            answer: "{{ question.answer|escapejs }}"
+            answer: "{{ question.answer|escapejs }}",
+            image: "{% if question.image %}{{ question.image.url|escapejs }}{% else %}{% endif %}"
         }{% if not forloop.last %},{% endif %}
     {% endfor %}
 ];
@@ -56,15 +57,32 @@ function renderQuestion(index) {
     if (!q) return;
 
     let progressHtml = '';
+    let imgHtml = '';
+    if (q.image) { 
+        imgHtml = ` 
+            <div style="max-width: 400px; width: 100%; margin: 0 auto;"> 
+                <img src="${q.image}" 
+                    alt="Иллюстрация к вопросу" 
+                    style=" 
+                        display: block; 
+                        width: 100%; 
+                        height: auto; 
+                        object-fit: cover; 
+                        border-radius: 8px; 
+                        box-shadow: 0 2px 6px rgba(0,0,0,0.1); 
+                        border: 1px solid var(--color-border); 
+                    "> 
+            </div> 
+        `; 
+    }
 
     area.innerHTML = `
         <div class="card shadow-lg" style="border-left: 8px solid var(--color-primary);">
             <div class="card-body p-4">
-                <div style="font-size: 1.4rem; line-height: 1.5; margin-bottom: 20px;" id="q-text">${q.text}</div>
+                <div style="font-size: 2rem; line-height: 1.5; margin-bottom: 20px; font-family: 'Roboto', sans-serif;" id="q-text">${q.text}</div>
                 
-                <!-- Блок ответа для ведущего -->
+                ${imgHtml}
                 ${progressHtml}
-
                 <!-- Панель навигации кнопок -->
                 <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-border); padding-top: 20px;">
                     

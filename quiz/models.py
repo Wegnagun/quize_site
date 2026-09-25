@@ -68,6 +68,11 @@ class Question(models.Model):
         blank=True, 
         help_text="Для ведущего: правильный вариант"
     )
+    image = models.ImageField(
+        blank=True,
+        verbose_name='Картинка',
+        upload_to='static/img'
+    )
     
     class Meta:
         verbose_name = "Вопрос"
