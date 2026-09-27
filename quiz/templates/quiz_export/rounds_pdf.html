@@ -1,0 +1,143 @@
+{% load dict_extras %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Раунды {{ quiz.title }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+            background-color: white;
+            /* Колонтитулы */
+            @top-center { content: "РАУНДЫ: {{ quiz.title }}"; font-family: sans-serif; color: #555; }
+            @bottom-center { content: "Страница " counter(page); font-family: sans-serif; color: #999; }
+        }
+        
+        body {
+            font-family: "DejaVu Sans", sans-serif; 
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 4px solid #2a9d8f;
+            padding-bottom: 15px;
+            margin-bottom: 40px;
+        }
+        .header h1 { margin: 0; font-size: 28pt; color: #264653; }
+        
+        .block-page {
+            page-break-inside: avoid; 
+            page-break-before: always; /* КАЖДАЯ ЗАДАЧА НАЧИНАЕТСЯ С НОВОЙ СТРАНИЦЫ */
+            margin-bottom: 50px;
+        }
+        
+        .block-title {
+            background-color: #3498db;
+            color: white;
+            padding: 15px 25px;
+            font-size: 20pt;
+            display: inline-block;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        ol {
+            padding-left: 30px;
+            margin-top: 30px;
+            counter-reset: quest-counter;
+        }
+        
+        li {
+            margin-bottom: 25px;
+            break-inside: auto;
+            position: relative;
+            padding-left: 10px;
+        }
+        
+        li::before {
+            counter-increment: quest-counter;
+            content: counter(quest-counter);
+            position: absolute;
+            left: -30px;
+            top: 0;
+            font-weight: bold;
+            color: #3498db;
+            width: 25px;
+            text-align: right;
+            font-size: 14pt;
+        }
+        
+        .question-text { 
+            font-size: 14pt; 
+            font-weight: 500; 
+            margin-bottom: 10px; 
+        }
+        
+        .answer-key {
+            background-color: #ecf0f1;
+            border-left: 6px solid #7f8c8d;
+            padding: 12px 16px;
+            font-size: 12pt;
+            font-family: monospace;
+            word-wrap: break-word;
+            color: #2c3e50;
+        }
+        
+        img {
+            max-width: 100%;
+            height: auto;
+            margin: 15px 0;
+            object-fit: contain;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>{{ quiz.title }}</h1>
+    <p><small>Выгружено: {{ generated_at }}</small></p>
+</div>
+
+{% for block in blocks %}
+    <!-- Блокируем разрыв страницы внутри раунда -->
+    <div class="block-page">
+        <div class="block-title">{{ block.title }}</div>
+        
+        {% if block.description %}
+            <div style="margin-top: 15px; font-style: italic; color: #555;">{{ block.description }}</div>
+        {% endif %}
+        
+        <ol>
+            {# Используем наш безопасный словарь #}
+            {% with key=block.id %}
+                {% with questions=questions_map|get_item:key %}
+                    {% if questions %}
+                        {% for q in questions %}
+                            <li>
+                                <div class="question-text">{{ q.text }}</div>
+                                
+                                {% if q.image %}
+                                    <img src="{{ q.image.url }}" alt="Image">
+                                {% endif %}
+                                
+                                <div class="answer-key">ОТВЕТ: {{ q.answer|default:"—" }}</div>
+                            </li>
+                        {% endfor %}
+                    {% else %}
+                        <li style="color: red; list-style-type: none;">
+                            ❌ ОШИБКА: Нет вопросов в этом раунде.
+                        </li>
+                    {% endif %}
+                {% endwith %}
+            {% endwith %}
+        </ol>
+    </div>
+{% endfor %}
+
+</body>
+</html>

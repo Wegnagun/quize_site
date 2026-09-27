@@ -1,0 +1,70 @@
+{% load dict_extras %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Квиз {{ quiz.title }} - Лист Ведущего</title>
+    <style>
+        @page { size: A4; margin: 2cm; background-color: white; }
+        body { font-family: "DejaVu Sans", sans-serif; color: #333; line-height: 1.6; }
+        
+        .header { text-align: center; border-bottom: 4px solid #2a9d8f; padding-bottom: 15px; margin-bottom: 40px; }
+        .header h1 { margin: 0; font-size: 28pt; color: #264653; }
+        
+        .task-block { page-break-inside: avoid; margin-bottom: 50px; }
+        .task-title { background-color: #2a9d8f; color: white; padding: 12px 20px; font-size: 16pt; display: inline-block; border-radius: 8px; }
+        
+        ol { padding-left: 25px; margin-top: 25px; }
+        li { margin-bottom: 25px; break-inside: auto; position: relative; padding-left: 5px; }
+        li::before { counter-increment: quest-counter; content: counter(quest-counter); position: absolute; left: -25px; top: 0; font-weight: bold; color: #2a9d8f; width: 20px; text-align: right; }
+        
+        .question-text { font-size: 13pt; font-weight: 500; margin-bottom: 8px; }
+        .answer-key { background-color: #f8f9fa; border-left: 5px solid #adb5bd; padding: 10px 14px; font-size: 11pt; font-family: monospace; word-wrap: break-word; }
+        
+        img { max-width: 100%; height: auto; margin: 10px 0; object-fit: contain; border: 1px solid #eee; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>{{ quiz.title }}</h1>
+    <p><small>Выгружено: {{ generated_at }}</small></p>
+</div>
+
+{% for task in tasks %}
+    <div class="task-block">
+        <span class="task-title">Задача {{ forloop.counter }}: {{ task.title }}</span>
+        
+        {% if task.description %}
+            <div style="margin-top: 10px; font-style: italic;">{{ task.description }}</div>
+        {% endif %}
+        
+        <ol>
+            {# НАДЕЖНЫЙ СПОСОБ ПОЛУЧЕНИЯ ВОПРОСОВ ИЗ СЛОВАРЯ #}
+            {% with key=task.id %}
+                {% with questions=tq_map|get_item:key %}
+                    {% if questions %}
+                        {% for q in questions %}
+                            <li>
+                                <div class="question-text">{{ q.question }}</div>
+                                
+                                {% if q.image %}
+                                    <img src="{{ q.image.url }}" alt="Image">
+                                {% endif %}
+                                
+                                <div class="answer-key">ОТВЕТ: {{ q.answer|default:"—" }}</div>
+                            </li>
+                        {% endfor %}
+                    {% else %}
+                        <li style="color: red; list-style-type: none;">
+                            ❌ Нет вопросов для этой задачи (проверьте админку -> Вопросы задачи).
+                        </li>
+                    {% endif %}
+                {% endwith %}
+            {% endwith %}
+        </ol>
+    </div>
+{% endfor %}
+
+</body>
+</html>

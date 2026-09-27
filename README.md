@@ -113,3 +113,8 @@ python manage.py manage.py search_dublicates --aq 5
 
 
 
+команды сохранить вопросы в pdf и docx
+python manage.py export_quiz --output=my_print_pack
+python manage.py export_rounds --output=my_print_pack
+
+
