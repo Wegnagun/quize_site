@@ -34,9 +34,6 @@
                         <td class="td-counter text-center align-middle"><strong>{{ forloop.counter }}</strong></td>
                         <td style="max-width: 400px; font-family: 'Roboto', sans-serif; vertical-align: middle; line-height: 1.4; text-align: justify; font-size: 2rem;">
                             {{ question.text }}
-<!--                             {% if question.answer %}
-                                <br><small style="color: #6c757d; display: inline-block; margin-top: 5px;">Ответ: {{ question.answer }}</small>
-                            {% endif %} -->
                         </td>
                         {% for team in teams %}
                             <td class="mark-cell text-center align-middle position-relative">
@@ -72,4 +69,5 @@
     </form>
 
 </div>
+
 {% endblock %}

@@ -1,9 +1,11 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponseNotAllowed
+from django.http import HttpResponseServerError
 from django.utils import timezone
 from django.contrib import messages 
 from .models import Team, Quiz, Block, TeamBlockResult, AnswerMark, Task, Task_question
-import random
+from django.views.decorators.http import require_POST
+from django.db import transaction 
+
 
 def team_scores(request):
     """Главная страница — только просмотр таблицы."""
@@ -195,48 +197,80 @@ def super_game(request):
     Страница Суперигры: отображает все Задачи для всех Команд сразу.
     """
     teams = Team.objects.all().order_by('-score', 'name')
-    all_tasks = Task.objects.all().order_by('title')
-    suffle_tasks = [i[0] for i in all_tasks.values_list('id')]
-    random.shuffle(suffle_tasks)
-    teams_tasks_zip = zip(teams.values_list('id'), suffle_tasks)
-    teams_tasks = {}
-    for i in teams_tasks_zip:
-        teams_tasks[i[0][0]] = Task.objects.get(id=i[1])
-
+    tasks = Task.objects.all().order_by('title')
     questions = Task_question.objects.all()
 
     context = {
         'teams': teams,
-        'tasks': all_tasks,
-        'teams_tasks': teams_tasks,
+        'tasks': tasks,
         'questions': questions
     }
 
     return render(request, 'super_game.html', context)
 
+def check_tasks(request):
+    """
+    Выводит форму со всеми задачами и вопросами для сверки ответов.
+    """
+    current_quiz = Quiz.objects.last()
+    
+    if not current_quiz:
+        return render(request, 'check_block.html', {'error': 'Квиз не найден'})
+        
+    teams = list(Team.objects.all().order_by('-score', 'name'))
+    
+    tasks = list(Task.objects.filter(quiz=current_quiz).prefetch_related('task').order_by('title'))
+    
+    all_questions = []
+    for t in tasks:
+        all_questions.extend(list(t.task.all()))
+        
+    question_ids = [q.id for q in all_questions]
+
+    marks_map = {}
+    if question_ids:
+        from .models import AnswerMark
+        existing_marks = AnswerMark.objects.filter(question_id__in=question_ids).select_related('result__team')
+        
+        for mark in existing_marks:
+            team_id = mark.result.team.id
+            question_id = mark.question.id
+            
+            if team_id not in marks_map:
+                marks_map[team_id] = set() 
+            marks_map[team_id].add(question_id)
+
+    context = {
+        'quiz_block': current_quiz,
+        'teams': teams,
+        'tasks': tasks,
+        'all_questions': all_questions,
+        'marks_map': marks_map, 
+    }
+    return render(request, 'check_tasks.html', context)
+
+
+@require_POST
 def save_task_result(request):
     """
-    Сохраняет ответы судей для Суперигры.
-    За каждый отмеченный вопрос начисляется 1 балл.
+    Сохраняет ответы и перенаправляет на страницу Суперигры (выбора задач).
     """
-    if request.method != 'POST':
-        return HttpResponseNotAllowed(['POST'])
+    try:
+        data = request.POST.dict()
+        
+        team_ids = set()
+        for key in data.keys():
+            if key.startswith('mark_'):
+                parts = key.split('_')
+                if len(parts) == 3 and parts[1].isdigit():
+                    team_ids.add(int(parts[1]))
 
-    data = request.POST.getlist('mark')
-    team_list = []
-    team_point = {}
+        with transaction.atomic():
+            for team_id in team_ids:
+                count = sum(1 for k in data if k.startswith(f"mark_{team_id}_"))
+                Team.objects.filter(id=team_id).update(score=count)
+        return redirect('supergame') 
 
-    for team_points in data:
-        team, _ = team_points.split('_')
-        team_list.append(team)
-        team_point[team] = team_point.get(team, 0) + 1
-
-    teams = Team.objects.filter(id__in=team_list)
-
-    for team in teams:
-        team_obj = team
-        print(team_point[str(team.id)])
-        team_obj.score = team_obj.score + team_point[str(team.id)]
-        team_obj.save()
-
-    return redirect('supergame')
+    except Exception as e:
+        print("Save error:", e)
+        return HttpResponseServerError("Ошибка сохранения")

@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load dict_extras %}
+
+{% block title %}Сверка ответов{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+    <!-- ХЕДЕР -->
+    <div style="text-align: center; margin-bottom: 10px; padding: 25px; border-radius: 16px; background: linear-gradient(135deg, #037030, #10e04e); color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative; overflow: hidden;">
+        <h1>{{ quiz_block.title }}</h1>
+    </div>
+
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <!-- ФОРМА ПРОВЕРКИ -->
+    <form method="post" action="{% url 'save_task_result' %}" id="check-form">
+        {% csrf_token %}
+        
+        <input type="hidden" name="quiz_id" value="{{ quiz_block.id }}">
+        
+        <table class="master-table">
+            <thead>
+                <tr>
+                    <th style="width: 60px;">№</th>
+                    <th style="min-width: 400px;">Задача</th>
+                    
+                    {# Динамические колонки команд #}
+                    {% for team in teams %}
+                        <th style="min-width: 120px;" title="{{ team.name }}">
+                            {{ team.name }}
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                
+                {# ЦИКЛ ПО ЗАДАЧАМ #}
+                {% for task in tasks %}
+                    <!-- Заголовок блока/задачи -->
+                    <tr class="task-header-row">
+                        <td colspan="{{ teams|length|add:2 }}" style="background: #f8f9fa; text-align: left; font-weight: bold; font-size: 1.4rem; padding: 20px; border-left: 5px solid #28a745;">
+                            📂 {{ task.title }}
+                            {% if task.description %}
+                                <br><small style="color: #6c757d; font-weight: normal;">{{ task.description }}</small>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                    {# ЦИКЛ ПО ВОПРОСАМ ЭТОЙ ЗАДАЧИ #}
+                    {% for question in task.task.all %}
+                        <tr data-qid="{{ question.id }}">
+                            <td class="text-center align-middle"><strong>{{ forloop.counter }}</strong></td>
+                            <td style="vertical-align: middle; line-height: 1.6;">
+                                <strong>{{ question.question }}</strong>
+                            </td>
+                            
+                            {# Чекбоксы для каждой команды #}
+                            {% for team in teams %}
+                                <td class="text-center align-middle">
+                                    <label class="checkbox-container">
+                                        <input type="checkbox" 
+                                               name="mark_{{ team.id }}_{{ question.id }}" 
+                                               value="1">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="{{ teams|length|add:2 }}" class="text-center py-4 text-muted fst-italic">
+                                Нет вопросов в этом раунде.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% empty %}
+                    <tr>
+                        <td colspan="{{ teams|length|add:2 }}" class="text-center py-5">
+                            <span class="badge bg-warning">В базе нет созданных задач.</span>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- КНОПКИ -->
+        <div style="display: flex; justify-content: space-between; margin-top: 30px; gap: 15px;">
+            <a href="{% url 'team_scores' %}" class="btn btn-outline-secondary btn-lg px-4">Назад</a>
+            <button type="submit" class="btn btn-success btn-lg px-5">Сохранить ответы</button>
+        </div>
+    </form>
+</div>
+
+<style>
+    /* Базовые стили таблицы */
+    .master-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    .master-table th, .master-table td { border: 1px solid #dee2e6; padding: 10px; }
+    .master-table thead th { background-color: #343a40; color: white; position: sticky; top: 0; z-index: 2; }
+    .master-table tbody tr:nth-child(even) { background-color: #fff; }
+    .master-table tbody tr:nth-child(odd) { background-color: #f8f9fa; }
+    
+    /* Стиль заголовка задачи */
+    .task-header-row td { 
+        font-family: sans-serif; 
+        border-bottom: 3px solid #ccc !important; 
+        background: #f1f3f5 !important;
+    }
+
+    /* Кастомный чекбокс (красивый квадратик) */
+    .checkbox-container {
+        display: inline-block;
+        position: relative;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .checkbox-container input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+    }
+
+    .checkmark {
+        display: inline-block;
+        height: 20px;
+        width: 20px;
+        background-color: #eee;
+        border: 2px solid #bbb;
+        border-radius: 4px;
+        transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    .checkbox-container:hover input ~ .checkmark {
+        background-color: #f0f0f0;
+    }
+
+    .checkbox-container input:checked ~ .checkmark {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .checkmark:after {
+        content: "";
+        position: absolute;
+        display: none;
+    }
+
+    .checkbox-container input:checked ~ .checkmark:after {
+        display: block;
+    }
+
+    .checkbox-container .checkmark:after {
+        left: 6px;
+        top: 2px;
+        width: 5px;
+        height: 10px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+</style>
+{% endblock %}

@@ -1,48 +1,191 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load dict_extras %}
 
-{% block title %}Супер раунд{% endblock %}
+{% block title %}Суперигра: {{ tasks.0.title|default:"Раунд" }}{% endblock %}
 
 {% block content %}
-<form method="post" action="{% url 'save_task_result' %}">
-    {% csrf_token %}
-    <div class="teams-flex">
-        {% for team in teams %}
-        {% with team_task=teams_tasks|get_item:team.id %}
-            <div class="team-card">
-                {% with task_q=questions|filter_tasks:team_task.id %}
-                <div class="card-header">
-                    {{ team.name }}
-                </div>
-                <div class="task-description" style="font-size: 1.3rem; font-family: 'Roboto', sans-serif; border-left: 4px solid var(--color-primary); padding-left: 10px;">
-                    {{ team_task.description }}
-                </div>
-                <ul style="list-style: none; padding: 0; margin: 0;">
-                    {% for q in task_q %}
-                        <li style="font-size: 1.1rem; font-family: 'Roboto', sans-serif; padding: 12px 0; display: flex; align-items: start; gap: 12px; border-bottom: 1px solid #eee;">
-                            <input type="checkbox" 
-                                name="mark" 
-                                value="{{ team.id }}_{{ q.id }}"
-                                style="transform: scale(1.2); flex-shrink: 0; cursor: pointer;"
-                                class="task-custom-check"
-                                >
-                            <label for="q_{{ team.id }}_{{ q.id }}">
-                                <strong>{{ forloop.counter }}. {{ q.question }} </strong>
-                            </label>
-                        </li>
-                    {% endfor %}
-                </ul>
-                {% endwith %}
-            </div>
-        {% endwith %}
-        {% endfor %}
-                    <button
-                    class="btn btn-gold" 
-                    type="submit"
-                    style="min-width: 200px; font-weight: bold;">
-                        🏆🏆🏆 Сохранить результаты 🏆🏆🏆
-                    </button>    
+<div class="question-container">
+
+    <!-- ПАНЕЛЬ УПРАВЛЕНИЯ ЗАДАЧАМИ -->
+    <div style="text-align: center; margin-bottom: 30px; padding: 15px; border-radius: 12px; background: linear-gradient(135deg, #037030, #10e04e); color: white; position: relative; overflow: hidden;">
+        <h1 id="current-task-title" style="margin: 0 0 5px 0; font-size: 2rem;">Загрузка...</h1>
+        
+        <!-- Индикатор прогресса задач -->
+        <div id="progress-bar" style="height: 5px; width: 0%; background-color: rgba(255,255,255,0.5); margin-top: 10px; transition: width 0.5s ease;"></div>
+        
+        <!-- Навигация по задачам (кнопки-цифры) -->
+        <div id="nav-buttons" style="display: flex; justify-content: center; gap: 10px; margin-top: 15px; flex-wrap: wrap; opacity: 0.9;">
+            {% for t in tasks %}
+                <button 
+                    type="button" 
+                    class="btn btn-outline nav-btn" 
+                    data-tid="{{ t.id }}" 
+                    style="padding: 8px 12px; font-size: 0.9rem; min-width: auto;">
+                    {{ forloop.counter }}
+                </button>
+            {% endfor %}
+        </div>
     </div>
-</form>
+
+    <!-- КОНТЕЙНЕР ТЕКУЩЕЙ ЗАДАЧИ -->
+    <div id="task-area">
+    </div>
+
+</div>
+
+<!-- СКРИПТ УПРАВЛЕНИЯ -->
+<script>
+// Подготовка данных для JS
+const allTasks = [
+    {% for task in tasks %}
+        {
+            id: {{ task.id }},
+            title: "{{ task.title|escapejs }}",
+            description: "{{ task.description|default:""|escapejs }}",
+            questions: [
+                {% for q in task.task.all %} 
+                    {
+                        id: {{ q.id }},
+                        text: "{{ q.question|escapejs }}",
+                        answer: "{{ q.answer|escapejs }}",
+                        image: "{% if q.image %}{{ q.image.url|escapejs }}{% else %}null{% endif %}"
+                    }{% if not forloop.last %},{% endif %}
+                {% empty %}
+                {% endfor %}
+            ]
+        }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+let currentTaskIndex = 0;
+
+// Функция отрисовки ВСЕЙ задачи со всеми вопросами
+function renderTask(index) {
+    const t = allTasks[index];
+    const area = document.getElementById('task-area');
+    const headerTitle = document.getElementById('current-task-title');
+    
+    if (!t) return;
+
+    // Обновляем заголовок в шапке страницы
+    headerTitle.innerText = t.title;
+
+    let questionsHtml = '';
+    if (t.questions.length > 0) {
+        questionsHtml = '<ul style="list-style: none; padding: 0; margin-top: 20px;">';
+        t.questions.forEach((q, idx) => {
+            
+            let imgHtml = '';
+            if (q.image && q.image !== 'null') {
+                imgHtml = `
+                    <div style="margin-top: 8px; max-width: 300px; margin-left: 30px;">
+                        <img src="${q.image}" alt="" style="width: 100%; height: auto; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    </div>
+                `;
+            }
+
+            questionsHtml += `
+                <li style="padding: 15px 0; display: flex; align-items: start; gap: 15px; border-bottom: 1px solid #eee;">                  
+                    <label for="q_${q.id}" style="flex-grow: 1; user-select: none; line-height: 1.6;">
+                        <strong>${idx + 1}. ${q.text}</strong><br>
+                        ${imgHtml}
+                    </label>
+                </li>
+            `;
+        });
+        questionsHtml += '</ul>';
+    } else {
+        questionsHtml = '<p class="text-muted fst-italic">В этой задаче нет вопросов.</p>';
+    }
+
+    area.innerHTML = `
+        <div class="card shadow-lg rounded-3">
+            <div class="card-body p-4">
+                
+                <!-- Описание задачи -->
+                ${t.description ? `<p style="font-size: 1.1rem; line-height: 1.8;">${t.description}</p>` : ''}
+                
+                <!-- Список всех вопросов -->
+                ${questionsHtml}
+
+                <!-- Панель навигации МЕЖДУ задачами -->
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-border); padding-top: 20px; margin-top: 20px;">
+                    
+                    <button onclick="prevTask()" 
+                            class="btn btn-outline"
+                            ${index === 0 ? 'disabled' : ''}>
+                        &larr; Пред. задача
+                    </button>
+                    
+                    <div>
+                        <button onclick="nextTask()" 
+                                class="btn btn-primary btn-lg"
+                                style="padding: 12px 24px; font-size: 1.1rem;">
+                            ${(index === allTasks.length - 1) ? 'Завершить' : 'След. задача'} &rarr;
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    updateNavButtons(index);
+    resetProgressBar();
+}
+
+// --- ЛОГИКА НАВИГАЦИИ ПО ЗАДАЧАМ ---
+function nextTask() {
+    if (currentTaskIndex < allTasks.length - 1) {
+        currentTaskIndex++;
+        renderTask(currentTaskIndex);
+        window.scrollTo({ top: 150, behavior: 'smooth' }); // Прокрутка к началу карточки
+    } else {
+        // Здесь можно сделать submit формы или переход на страницу проверки
+        window.location.href = "/check_tasks/";
+    }
+}
+
+function prevTask() {
+    if (currentTaskIndex > 0) {
+        currentTaskIndex--;
+        renderTask(currentTaskIndex);
+        window.scrollTo({ top: 150, behavior: 'smooth' });
+    }
+}
+
+// Обновление подсветки кнопок-нумераторов вверху
+function updateNavButtons(activeIndex) {
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-outline-menu');
+        
+        if (parseInt(btn.dataset.tid) === allTasks[activeIndex].id) {
+            btn.classList.remove('btn-outline-menu');
+            btn.classList.add('btn-primary');
+        }
+    });
+}
+
+function resetProgressBar() {
+    const percent = ((currentTaskIndex + 1) / allTasks.length) * 100;
+    document.getElementById('progress-bar').style.width = percent + '%';
+}
+
+// Клики по цифровым кнопкам "1, 2, 3..."
+document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const targetTid = parseInt(this.dataset.tid);
+        const idx = allTasks.findIndex(t => t.id === targetTid);
+        
+        if (idx !== -1) {
+            currentTaskIndex = idx;
+            renderTask(currentTaskIndex);
+            window.scrollTo({ top: 150, behavior: 'smooth' });
+        }
+    });
+});
+
+// Первоначальная отрисовка первой задачи при загрузке страницы
+renderTask(currentTaskIndex);
+</script>
 {% endblock %}
