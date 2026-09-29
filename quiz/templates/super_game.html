@@ -85,8 +85,8 @@ function renderTask(index) {
             }
 
             questionsHtml += `
-                <li style="padding: 15px 0; display: flex; align-items: start; gap: 15px; border-bottom: 1px solid #eee;">                  
-                    <label for="q_${q.id}" style="flex-grow: 1; user-select: none; line-height: 1.6;">
+                <li style="padding: 15px 0; font-size: 1.3rem; display: flex; align-items: start; gap: 15px; border-bottom: 1px solid #eee;">                  
+                    <label for="q_${q.id}" style="flex-grow: 1; line-height: 1.4; ">
                         <strong>${idx + 1}. ${q.text}</strong><br>
                         ${imgHtml}
                     </label>
@@ -103,7 +103,7 @@ function renderTask(index) {
             <div class="card-body p-4">
                 
                 <!-- Описание задачи -->
-                ${t.description ? `<p style="font-size: 1.1rem; line-height: 1.8;">${t.description}</p>` : ''}
+                ${t.description ? `<p style="font-size: 1.8rem; line-height: 1.6;">${t.description}</p>` : ''}
                 
                 <!-- Список всех вопросов -->
                 ${questionsHtml}
