@@ -29,9 +29,9 @@
         {% else %}
             <!-- Если квиз выбран, но команд нет -->
             {% if CURRENT_QUIZ %}
-                <div class="alert alert-info text-center" style="margin-bottom: 0; font-size: 0.9rem;">
-                    В текущем квизе пока нет команд.<br>
-                    <a href="{% url 'add_team' %}" class="alert-link" style="display:block; margin-top:5px;">+ Добавить первую</a>
+                <div class="alert alert-info text-center" style="margin-bottom: 0; font-size: 1.2rem;">
+                    В текущем квизе пока нет команд.<br><br>
+                    <a href="{% url 'add_team' %}" class="btn btn-primary btn-lg" style="font-size: 1.1rem; padding: 12px 30px; border-radius: 50px;"> <i class="bi bi-plus-lg"></i> Добавить команду </a>
                 </div>
             {% else %}
                 <!-- Если вообще нет квизов в базе -->
