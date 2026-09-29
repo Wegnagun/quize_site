@@ -5,6 +5,7 @@ from django.contrib import messages
 from .models import Team, Quiz, Block, TeamBlockResult, AnswerMark, Task, Task_question
 from django.views.decorators.http import require_POST
 from django.db import transaction 
+from django.db import models
 
 
 def team_scores(request):
@@ -253,24 +254,46 @@ def check_tasks(request):
 @require_POST
 def save_task_result(request):
     """
-    Сохраняет ответы и перенаправляет на страницу Суперигры (выбора задач).
+    Сохраняет ответы Суперигры и ПРИБАВЛЯЕТ их к текущему счету команды.
     """
     try:
         data = request.POST.dict()
         
-        team_ids = set()
+        quiz_id = data.get('quiz_id')
+        if not quiz_id:
+            return HttpResponseServerError("ID квиза не найден.")
+            
+        valid_question_ids = set(
+            Task_question.objects.filter(
+                task__quiz_id=quiz_id
+            ).values_list('id', flat=True)
+        )
+
+        team_points = {}
+        
         for key in data.keys():
             if key.startswith('mark_'):
                 parts = key.split('_')
-                if len(parts) == 3 and parts[1].isdigit():
-                    team_ids.add(int(parts[1]))
+                if len(parts) == 3 and parts[1].isdigit() and parts[2].isdigit():
+                    team_id = int(parts[1])
+                    question_id = int(parts[2])
+                    
+                    if question_id in valid_question_ids:
+                        if team_id not in team_points:
+                            team_points[team_id] = 0
+                        team_points[team_id] += 1
 
+        if not team_points:
+            return redirect('team_scores')
+
+        # 3. Обновляем счет команд в БД (ПРИБАВЛЕНИЕ)
         with transaction.atomic():
-            for team_id in team_ids:
-                count = sum(1 for k in data if k.startswith(f"mark_{team_id}_"))
-                Team.objects.filter(id=team_id).update(score=count)
-        return redirect('supergame') 
+            for team_id, points_to_add in team_points.items():
+                Team.objects.filter(id=team_id).update(score=models.F('score') + points_to_add)
+
+        return redirect('team_scores') 
 
     except Exception as e:
         print("Save error:", e)
         return HttpResponseServerError("Ошибка сохранения")
+    
